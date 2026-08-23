@@ -10,10 +10,11 @@ import {
 } from "react-router";
 import { nanoid } from "nanoid";
 
-import { names, type ChatMessage, type Message } from "../shared";
+import { type ChatMessage, type Message } from "../shared";
 
 function App() {
-	const [name] = useState(names[Math.floor(Math.random() * names.length)]);
+	const [name, setName] = useState("");
+	const [nameConfirmed, setNameConfirmed] = useState(false);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const { room } = useParams();
 
@@ -22,10 +23,11 @@ function App() {
 		room,
 		onMessage: (evt) => {
 			const message = JSON.parse(evt.data as string) as Message;
+
 			if (message.type === "add") {
 				const foundIndex = messages.findIndex((m) => m.id === message.id);
+
 				if (foundIndex === -1) {
-					// probably someone else who added a message
 					setMessages((messages) => [
 						...messages,
 						{
@@ -36,9 +38,6 @@ function App() {
 						},
 					]);
 				} else {
-					// this usually means we ourselves added a message
-					// and it was broadcasted back
-					// so let's replace the message with the new message
 					setMessages((messages) => {
 						return messages
 							.slice(0, foundIndex)
@@ -70,29 +69,85 @@ function App() {
 		},
 	});
 
+	if (!nameConfirmed) {
+		return (
+			<div className="name-screen">
+				<div className="name-box">
+					<div className="name-icon">🌿</div>
+
+					<h2>Bienvenido al chat</h2>
+
+					<p>
+						Para participar en el chat de Villa Los Agapantos,
+						indica el nombre con el que quieres aparecer.
+					</p>
+
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+
+							const cleanName = name.trim();
+
+							if (cleanName.length >= 2) {
+								setName(cleanName);
+								setNameConfirmed(true);
+							}
+						}}
+					>
+						<input
+							type="text"
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							placeholder="Escribe tu nombre"
+							autoComplete="name"
+							autoFocus
+							maxLength={30}
+						/>
+
+						<button type="submit">
+							Entrar al chat
+						</button>
+					</form>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="chat container">
 			{messages.map((message) => (
 				<div key={message.id} className="row message">
 					<div className="two columns user">{message.user}</div>
-					<div className="ten columns">{message.content}</div>
+
+					<div className="ten columns">
+						{message.content}
+					</div>
 				</div>
 			))}
+
 			<form
 				className="row"
 				onSubmit={(e) => {
 					e.preventDefault();
+
 					const content = e.currentTarget.elements.namedItem(
 						"content",
 					) as HTMLInputElement;
+
+					const text = content.value.trim();
+
+					if (!text) {
+						return;
+					}
+
 					const chatMessage: ChatMessage = {
 						id: nanoid(8),
-						content: content.value,
+						content: text,
 						user: name,
 						role: "user",
 					};
+
 					setMessages((messages) => [...messages, chatMessage]);
-					// we could broadcast the message here
 
 					socket.send(
 						JSON.stringify({
@@ -108,18 +163,18 @@ function App() {
 					type="text"
 					name="content"
 					className="ten columns my-input-text"
-					placeholder={`Hello ${name}! Type a message...`}
+					placeholder={`Hola ${name}, escribe un mensaje...`}
 					autoComplete="off"
 				/>
+
 				<button type="submit" className="send-message two columns">
-					Send
+					Enviar
 				</button>
 			</form>
 		</div>
 	);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 createRoot(document.getElementById("root")!).render(
 	<BrowserRouter>
 		<Routes>
