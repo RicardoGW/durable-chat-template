@@ -137,31 +137,65 @@ body {
 /* MENSAJES */
 
 .message {
-	margin-bottom: 12px;
-	padding: 10px 14px;
-	border-radius: 12px;
-	background: #f3f6f3;
+	width: 100%;
+	margin-bottom: 14px;
+	padding: 0;
 	display: flex;
-	align-items: center;
-	gap: 12px;
+	flex-direction: column;
 	box-sizing: border-box;
+	background: transparent;
 }
 
-.message .user {
-	font-weight: bold;
-	text-align: left;
-	color: #45634b;
+.message-user {
 	width: auto;
-	margin: 0;
+	margin: 0 0 4px 0;
+	padding: 0;
+	font-size: 12px;
+	font-weight: 600;
+	color: #657269;
 }
 
-.message .remove {
-	display: none;
-}
-
-.message > div:last-child {
-	color: #3e4741;
+.message-bubble {
+	width: fit-content;
+	max-width: 70%;
+	padding: 10px 14px;
+	border-radius: 16px;
+	font-size: 14px;
 	line-height: 1.4;
+	box-sizing: border-box;
+	word-wrap: break-word;
+}
+
+/* MIS MENSAJES */
+
+.my-message {
+	align-items: flex-end;
+}
+
+.my-message .message-user {
+	text-align: right;
+}
+
+.my-message .message-bubble {
+	background: #55745b;
+	color: #ffffff;
+	border-bottom-right-radius: 5px;
+}
+
+/* MENSAJES DE OTROS VECINOS */
+
+.other-message {
+	align-items: flex-start;
+}
+
+.other-message .message-user {
+	text-align: left;
+}
+
+.other-message .message-bubble {
+	background: #f0f4f0;
+	color: #354039;
+	border-bottom-left-radius: 5px;
 }
 
 /* CAJA PARA ESCRIBIR */
@@ -228,76 +262,7 @@ body {
 	color: #89928b;
 }
 
-/* CELULARES */
-
-@media screen and (max-width: 700px) {
-	.chat-page {
-		padding: 10px;
-		height: 100vh;
-	}
-
-	.chat-header {
-		padding: 14px;
-		border-radius: 14px;
-	}
-
-	.chat-logo {
-		width: 44px;
-		height: 44px;
-		font-size: 23px;
-	}
-
-	.chat-header h1 {
-		font-size: 21px;
-	}
-
-	.chat-header p {
-		font-size: 13px;
-	}
-
-	.chat-intro {
-		padding: 14px;
-		border-radius: 14px;
-	}
-
-	.chat-intro h2 {
-		font-size: 17px;
-	}
-
-	.chat-intro p {
-		font-size: 13px;
-	}
-
-	.chat-container {
-		padding: 12px;
-		border-radius: 14px;
-	}
-
-	.message {
-		padding: 9px 11px;
-		font-size: 14px;
-		gap: 8px;
-	}
-
-	.chat form {
-		gap: 7px;
-	}
-
-	.my-input-text {
-		font-size: 14px;
-	}
-
-	.send-message {
-		width: 78px !important;
-		font-size: 13px;
-	}
-
-	.chat-footer {
-		font-size: 10px;
-		text-align: center;
-	}
-}
-/* PANTALLA DE INGRESO AL CHAT */
+/* PANTALLA DE INGRESO */
 
 .name-screen {
 	width: 100%;
@@ -385,6 +350,75 @@ body {
 /* CELULARES */
 
 @media screen and (max-width: 700px) {
+	.chat-page {
+		padding: 10px;
+		height: 100vh;
+	}
+
+	.chat-header {
+		padding: 14px;
+		border-radius: 14px;
+	}
+
+	.chat-logo {
+		width: 44px;
+		height: 44px;
+		font-size: 23px;
+	}
+
+	.chat-header h1 {
+		font-size: 21px;
+	}
+
+	.chat-header p {
+		font-size: 13px;
+	}
+
+	.chat-intro {
+		padding: 14px;
+		border-radius: 14px;
+	}
+
+	.chat-intro h2 {
+		font-size: 17px;
+	}
+
+	.chat-intro p {
+		font-size: 13px;
+	}
+
+	.chat-container {
+		padding: 12px;
+		border-radius: 14px;
+	}
+
+	.message-bubble {
+		max-width: 82%;
+		font-size: 14px;
+	}
+
+	.message-user {
+		font-size: 11px;
+	}
+
+	.chat form {
+		gap: 7px;
+	}
+
+	.my-input-text {
+		font-size: 14px;
+	}
+
+	.send-message {
+		width: 78px !important;
+		font-size: 13px;
+	}
+
+	.chat-footer {
+		font-size: 10px;
+		text-align: center;
+	}
+
 	.name-screen {
 		padding: 15px;
 	}
@@ -405,149 +439,9 @@ body {
 	.name-box form {
 		flex-direction: column;
 	}
-	/* BURBUJAS DEL CHAT */
-
-.message {
-	display: flex;
-	flex-direction: column;
-	margin-bottom: 14px;
-	padding: 0;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.message-user {
-	font-size: 12px;
-	font-weight: 600;
-	color: #657269;
-	margin-bottom: 4px;
-}
-
-.message-bubble {
-	max-width: 70%;
-	padding: 10px 14px;
-	border-radius: 16px;
-	font-size: 14px;
-	line-height: 1.4;
-	box-sizing: border-box;
-	word-wrap: break-word;
-}
-
-/* MENSAJES PROPIOS */
-
-.my-message {
-	align-items: flex-end;
-}
-
-.my-message .message-user {
-	text-align: right;
-}
-
-.my-message .message-bubble {
-	background: #55745b;
-	color: #ffffff;
-	border-bottom-right-radius: 5px;
-}
-
-/* MENSAJES DE OTROS VECINOS */
-
-.other-message {
-	align-items: flex-start;
-}
-
-.other-message .message-user {
-	text-align: left;
-}
-
-.other-message .message-bubble {
-	background: #f0f4f0;
-	color: #354039;
-	border-bottom-left-radius: 5px;
-}
-
-/* CELULARES */
-
-@media screen and (max-width: 700px) {
-	.message-bubble {
-		max-width: 82%;
-		font-size: 14px;
-	}
-
-	.message-user {
-		font-size: 11px;
-	}
-}
 
 	.name-box input,
 	.name-box button {
 		width: 100%;
-	}
-}
-/* POSICIÓN DEFINITIVA DE LAS BURBUJAS */
-
-.message {
-	width: 100% !important;
-	display: flex !important;
-	flex-direction: column !important;
-	margin-bottom: 14px !important;
-	padding: 0 !important;
-	background: transparent !important;
-	box-sizing: border-box !important;
-}
-
-.message-user {
-	width: auto !important;
-	margin: 0 0 4px 0 !important;
-	padding: 0 !important;
-	font-size: 12px !important;
-	font-weight: 600 !important;
-}
-
-.message-bubble {
-	width: fit-content !important;
-	max-width: 70% !important;
-	padding: 10px 14px !important;
-	border-radius: 16px !important;
-	box-sizing: border-box !important;
-	word-wrap: break-word !important;
-}
-
-/* TU MENSAJE → DERECHA */
-
-.my-message {
-	align-items: flex-end !important;
-}
-
-.my-message .message-user {
-	text-align: right !important;
-}
-
-.my-message .message-bubble {
-	background: #55745b !important;
-	color: #ffffff !important;
-	border-bottom-right-radius: 5px !important;
-}
-
-/* OTRO VECINO → IZQUIERDA */
-
-.other-message {
-	align-items: flex-start !important;
-}
-
-.other-message .message-user {
-	text-align: left !important;
-}
-
-.other-message .message-bubble {
-	background: #f0f4f0 !important;
-	color: #354039 !important;
-	border-bottom-left-radius: 5px !important;
-}
-
-/* CELULARES */
-
-@media screen and (max-width: 700px) {
-	.message-bubble {
-		max-width: 82% !important;
 	}
 }
