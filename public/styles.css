@@ -111,7 +111,7 @@ body {
 	background: #ffffff;
 	border-radius: 16px;
 	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
-	padding: 14px;
+	padding: 16px;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
@@ -132,7 +132,7 @@ body {
 	justify-content: flex-end;
 	overflow-y: auto;
 	height: 100%;
-	padding: 2px 4px;
+	padding: 5px 8px;
 	box-sizing: border-box;
 }
 
@@ -140,7 +140,7 @@ body {
 
 .message {
 	width: 100%;
-	margin-bottom: 10px;
+	margin-bottom: 16px;
 	padding: 0;
 	display: flex;
 	flex-direction: column;
@@ -148,24 +148,28 @@ body {
 	background: transparent;
 }
 
+/* NOMBRE */
+
 .message-user {
 	width: auto;
 	margin: 0 0 3px 0;
-	padding: 0 5px;
-	font-size: 11px;
-	font-weight: 600;
-	color: #748078;
+	padding: 0;
+	font-size: 13px;
+	font-weight: 700;
+	color: #45634b;
 }
+
+/* TEXTO DEL MENSAJE
+   Sin rectángulo grande */
 
 .message-bubble {
 	width: fit-content;
-	max-width: 65%;
-	padding: 9px 13px;
-	border-radius: 15px;
-	font-size: 14px;
-	line-height: 1.4;
+	max-width: 68%;
+	padding: 4px 0;
 	box-sizing: border-box;
 	word-wrap: break-word;
+	font-size: 15px;
+	line-height: 1.45;
 }
 
 /* MIS MENSAJES */
@@ -176,15 +180,15 @@ body {
 
 .my-message .message-user {
 	text-align: right;
+	color: #55745b;
 }
 
 .my-message .message-bubble {
-	background: #55745b;
-	color: #ffffff;
-	border-bottom-right-radius: 4px;
+	color: #55745b;
+	text-align: right;
 }
 
-/* MENSAJES DE OTROS VECINOS */
+/* MENSAJES DE OTROS */
 
 .other-message {
 	align-items: flex-start;
@@ -192,12 +196,18 @@ body {
 
 .other-message .message-user {
 	text-align: left;
+	color: #45634b;
 }
 
 .other-message .message-bubble {
-	background: #f0f4f0;
-	color: #354039;
-	border-bottom-left-radius: 4px;
+	color: #3e4741;
+	text-align: left;
+}
+
+/* SEPARADOR MUY SUAVE ENTRE MENSAJES */
+
+.message-bubble::after {
+	content: "";
 }
 
 /* CAJA PARA ESCRIBIR */
@@ -389,18 +399,21 @@ body {
 		border-radius: 13px;
 	}
 
-	.message {
-		margin-bottom: 9px;
+	#root {
+		padding: 5px 4px;
 	}
 
-	.message-bubble {
-		max-width: 80%;
-		font-size: 14px;
-		padding: 9px 12px;
+	.message {
+		margin-bottom: 14px;
 	}
 
 	.message-user {
-		font-size: 11px;
+		font-size: 12px;
+	}
+
+	.message-bubble {
+		max-width: 82%;
+		font-size: 14px;
 	}
 
 	.chat form {
