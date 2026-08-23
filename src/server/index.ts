@@ -7,12 +7,18 @@ import {
 
 import type { ChatMessage, Message } from "../shared";
 
+type TypingMessage = {
+	type: "typing";
+	user: string;
+	typing: boolean;
+};
+
 export class Chat extends Server<Env> {
 	static options = { hibernate: true };
 
 	messages = [] as ChatMessage[];
 
-	broadcastMessage(message: Message, exclude?: string[]) {
+	broadcastMessage(message: Message | TypingMessage, exclude?: string[]) {
 		this.broadcast(JSON.stringify(message), exclude);
 	}
 
@@ -41,18 +47,16 @@ export class Chat extends Server<Env> {
 		);
 
 		if (existingMessage) {
-			this.messages = this.messages.map((m) => {
-				if (m.id === message.id) {
-					return message;
-				}
-				return m;
-			});
+			this.messages = this.messages.map((m) =>
+				m.id === message.id ? message : m,
+			);
 		} else {
 			this.messages.push(message);
 		}
 
 		this.ctx.storage.sql.exec(
-			`INSERT INTO messages (id, user, role, content) VALUES (?, ?, ?, ?)
+			`INSERT INTO messages (id, user, role, content)
+			 VALUES (?, ?, ?, ?)
 			 ON CONFLICT (id) DO UPDATE SET content = ?`,
 			message.id,
 			message.user,
@@ -63,9 +67,16 @@ export class Chat extends Server<Env> {
 	}
 
 	onMessage(connection: Connection, message: WSMessage) {
-		this.broadcast(message);
+		const parsed = JSON.parse(message as string) as
+			| Message
+			| TypingMessage;
 
-		const parsed = JSON.parse(message as string) as Message;
+		if (parsed.type === "typing") {
+			this.broadcastMessage(parsed, [connection.id]);
+			return;
+		}
+
+		this.broadcast(message);
 
 		if (parsed.type === "add" || parsed.type === "update") {
 			this.saveMessage(parsed);
