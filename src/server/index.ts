@@ -7,29 +7,18 @@ import {
 
 import type { ChatMessage, Message } from "../shared";
 
-type TypingMessage = {
-	type: "typing";
-	user: string;
-	typing: boolean;
-};
-
 export class Chat extends Server<Env> {
 	static options = { hibernate: true };
 
 	messages = [] as ChatMessage[];
 
-	broadcastMessage(message: Message | TypingMessage, exclude?: string[]) {
+	broadcastMessage(message: Message, exclude?: string[]) {
 		this.broadcast(JSON.stringify(message), exclude);
 	}
 
 	onStart() {
 		this.ctx.storage.sql.exec(
-			`CREATE TABLE IF NOT EXISTS messages (
-				id TEXT PRIMARY KEY,
-				user TEXT,
-				role TEXT,
-				content TEXT
-			)`,
+			`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, user TEXT, role TEXT, content TEXT)`,
 		);
 
 		this.messages = this.ctx.storage.sql
@@ -56,7 +45,6 @@ export class Chat extends Server<Env> {
 				if (m.id === message.id) {
 					return message;
 				}
-
 				return m;
 			});
 		} else {
@@ -64,12 +52,8 @@ export class Chat extends Server<Env> {
 		}
 
 		this.ctx.storage.sql.exec(
-			`INSERT INTO messages
-				(id, user, role, content)
-			VALUES (?, ?, ?, ?)
-			ON CONFLICT (id)
-			DO UPDATE SET
-				content = ?`,
+			`INSERT INTO messages (id, user, role, content) VALUES (?, ?, ?, ?)
+			 ON CONFLICT (id) DO UPDATE SET content = ?`,
 			message.id,
 			message.user,
 			message.role,
@@ -79,21 +63,11 @@ export class Chat extends Server<Env> {
 	}
 
 	onMessage(connection: Connection, message: WSMessage) {
-		const parsed = JSON.parse(message as string) as
-			| Message
-			| TypingMessage;
-
-		if (parsed.type === "typing") {
-			this.broadcastMessage(parsed, [connection.id]);
-			return;
-		}
-
 		this.broadcast(message);
 
-		if (
-			parsed.type === "add" ||
-			parsed.type === "update"
-		) {
+		const parsed = JSON.parse(message as string) as Message;
+
+		if (parsed.type === "add" || parsed.type === "update") {
 			this.saveMessage(parsed);
 		}
 	}
