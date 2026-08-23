@@ -15,6 +15,7 @@ import { type ChatMessage, type Message } from "../shared";
 type TypingMessage = {
 	type: "typing";
 	user: string;
+	typing: boolean;
 };
 
 function App() {
@@ -23,18 +24,20 @@ function App() {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [typingUser, setTypingUser] = useState("");
 	const { room } = useParams();
+
 	const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const socket = usePartySocket({
 		party: "chat",
 		room,
+
 		onMessage: (evt) => {
 			const message = JSON.parse(evt.data as string) as
 				| Message
 				| TypingMessage;
 
 			if (message.type === "typing") {
-				if (message.user !== name) {
+				if (message.user !== name && message.typing) {
 					setTypingUser(message.user);
 
 					if (typingTimeout.current) {
@@ -43,7 +46,11 @@ function App() {
 
 					typingTimeout.current = setTimeout(() => {
 						setTypingUser("");
-					}, 2000);
+					}, 2500);
+				}
+
+				if (message.user !== name && !message.typing) {
+					setTypingUser("");
 				}
 
 				return;
@@ -77,6 +84,8 @@ function App() {
 							.concat(messages.slice(foundIndex + 1));
 					});
 				}
+
+				setTypingUser("");
 			} else if (message.type === "update") {
 				setMessages((messages) =>
 					messages.map((m) =>
@@ -104,13 +113,25 @@ function App() {
 		};
 	}, []);
 
+	const sendTyping = (isTyping: boolean) => {
+		socket.send(
+			JSON.stringify({
+				type: "typing",
+				user: name,
+				typing: isTyping,
+			}),
+		);
+	};
+
 	if (!nameConfirmed) {
 		return (
 			<div className="name-screen">
 				<div className="name-box">
 					<div className="name-icon">🌿</div>
 
-					<div className="name-welcome">Villa Los Agapantos</div>
+					<div className="name-welcome">
+						Villa Los Agapantos
+					</div>
 
 					<h2>Bienvenido al chat</h2>
 
@@ -150,22 +171,15 @@ function App() {
 		);
 	}
 
-	const sendTyping = (isTyping: boolean) => {
-		socket.send(
-			JSON.stringify({
-				type: "typing",
-				user: name,
-				typing: isTyping,
-			}),
-		);
-	};
-
 	return (
 		<div className="chat container">
+
 			<div className="chat-welcome-bar">
-				<div>
+				<div className="chat-welcome-text">
 					<strong>💬 Conversación de vecinos</strong>
-					<span>Comparte información y mantente conectado.</span>
+					<span>
+						Comparte información y mantente conectado.
+					</span>
 				</div>
 
 				<div className="chat-live">
@@ -175,6 +189,7 @@ function App() {
 			</div>
 
 			<div className="messages-area">
+
 				{messages.map((message) => {
 					const isMine = message.user === name;
 
@@ -182,20 +197,29 @@ function App() {
 						<div
 							key={message.id}
 							className={`message ${
-								isMine ? "my-message" : "other-message"
+								isMine
+									? "my-message"
+									: "other-message"
 							}`}
 						>
 							<div className="message-meta">
+
 								<span className="message-user">
-									{isMine ? "YO" : message.user}
+									{isMine
+										? "YO"
+										: message.user}
 								</span>
 
 								<span className="message-time">
-									{new Date().toLocaleTimeString("es-CL", {
-										hour: "2-digit",
-										minute: "2-digit",
-									})}
+									{new Date().toLocaleTimeString(
+										"es-CL",
+										{
+											hour: "2-digit",
+											minute: "2-digit",
+										},
+									)}
 								</span>
+
 							</div>
 
 							<div className="message-bubble">
@@ -213,10 +237,14 @@ function App() {
 
 				{typingUser && (
 					<div className="typing-indicator">
+						<span className="typing-icon">✍️</span>
+
 						<span className="typing-name">
 							{typingUser}
 						</span>
+
 						<span>está escribiendo</span>
+
 						<span className="typing-dots">
 							<span>•</span>
 							<span>•</span>
@@ -224,6 +252,7 @@ function App() {
 						</span>
 					</div>
 				)}
+
 			</div>
 
 			<form
@@ -231,9 +260,10 @@ function App() {
 				onSubmit={(e) => {
 					e.preventDefault();
 
-					const content = e.currentTarget.elements.namedItem(
-						"content",
-					) as HTMLInputElement;
+					const content =
+						e.currentTarget.elements.namedItem(
+							"content",
+						) as HTMLInputElement;
 
 					const text = content.value.trim();
 
@@ -248,7 +278,10 @@ function App() {
 						role: "user",
 					};
 
-					setMessages((messages) => [...messages, chatMessage]);
+					setMessages((messages) => [
+						...messages,
+						chatMessage,
+					]);
 
 					socket.send(
 						JSON.stringify({
@@ -258,9 +291,11 @@ function App() {
 					);
 
 					sendTyping(false);
+
 					content.value = "";
 				}}
 			>
+
 				<div className="input-wrapper">
 					<input
 						type="text"
@@ -272,14 +307,19 @@ function App() {
 					/>
 				</div>
 
-				<button type="submit" className="send-message">
+				<button
+					type="submit"
+					className="send-message"
+				>
 					Enviar
 				</button>
+
 			</form>
 
 			<div className="chat-security">
 				🔒 Chat de la comunidad · Villa Los Agapantos
 			</div>
+
 		</div>
 	);
 }
@@ -287,10 +327,20 @@ function App() {
 createRoot(document.getElementById("root")!).render(
 	<BrowserRouter>
 		<Routes>
-			<Route path="/" element={<Navigate to={`/${nanoid()}`} />} />
-			<Route path="/:room" element={<App />} />
-			<Route path="/:room" element={<App />} />
-			<Route path="*" element={<Navigate to="/" />} />
+			<Route
+				path="/"
+				element={<Navigate to={`/${nanoid()}`} />}
+			/>
+
+			<Route
+				path="/:room"
+				element={<App />}
+			/>
+
+			<Route
+				path="*"
+				element={<Navigate to="/" />}
+			/>
 		</Routes>
 	</BrowserRouter>,
 );
