@@ -18,14 +18,32 @@ type TypingMessage = {
 	typing: boolean;
 };
 
+function formatTime() {
+	return new Date().toLocaleTimeString("es-CL", {
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: false,
+	});
+}
+
+function getInitial(name: string) {
+	return name.trim().charAt(0).toUpperCase();
+}
+
 function App() {
 	const [name, setName] = useState("");
 	const [nameConfirmed, setNameConfirmed] = useState(false);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [typingUser, setTypingUser] = useState("");
+	const [messageTimes, setMessageTimes] = useState<
+		Record<string, string>
+	>({});
+
 	const { room } = useParams();
 
-	const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	);
 
 	const socket = usePartySocket({
 		party: "chat",
@@ -57,38 +75,43 @@ function App() {
 			}
 
 			if (message.type === "add") {
-				const foundIndex = messages.findIndex(
-					(m) => m.id === message.id,
-				);
+				setMessages((currentMessages) => {
+					const foundIndex = currentMessages.findIndex(
+						(m) => m.id === message.id,
+					);
 
-				if (foundIndex === -1) {
-					setMessages((messages) => [
-						...messages,
-						{
-							id: message.id,
-							content: message.content,
-							user: message.user,
-							role: message.role,
-						},
-					]);
-				} else {
-					setMessages((messages) => {
-						return messages
-							.slice(0, foundIndex)
-							.concat({
+					if (foundIndex === -1) {
+						return [
+							...currentMessages,
+							{
 								id: message.id,
 								content: message.content,
 								user: message.user,
 								role: message.role,
-							})
-							.concat(messages.slice(foundIndex + 1));
-					});
-				}
+							},
+						];
+					}
+
+					return currentMessages
+						.slice(0, foundIndex)
+						.concat({
+							id: message.id,
+							content: message.content,
+							user: message.user,
+							role: message.role,
+						})
+						.concat(currentMessages.slice(foundIndex + 1));
+				});
+
+				setMessageTimes((times) => ({
+					...times,
+					[message.id]: formatTime(),
+				}));
 
 				setTypingUser("");
 			} else if (message.type === "update") {
-				setMessages((messages) =>
-					messages.map((m) =>
+				setMessages((currentMessages) =>
+					currentMessages.map((m) =>
 						m.id === message.id
 							? {
 									id: message.id,
@@ -101,6 +124,18 @@ function App() {
 				);
 			} else if (message.type === "all") {
 				setMessages(message.messages);
+
+				setMessageTimes((times) => {
+					const updated = { ...times };
+
+					for (const message of message.messages) {
+						if (!updated[message.id]) {
+							updated[message.id] = formatTime();
+						}
+					}
+
+					return updated;
+				});
 			}
 		},
 	});
@@ -136,8 +171,9 @@ function App() {
 					<h2>Bienvenido al chat</h2>
 
 					<p>
-						Conversemos entre vecinos y mantengámonos
-						conectados como comunidad.
+						Un espacio para conversar, compartir
+						información y mantenernos conectados
+						como comunidad.
 					</p>
 
 					<form
@@ -156,7 +192,7 @@ function App() {
 							type="text"
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder="¿Cómo te llamas?"
+							placeholder="Escribe tu nombre"
 							autoComplete="name"
 							autoFocus
 							maxLength={30}
@@ -174,17 +210,31 @@ function App() {
 	return (
 		<div className="chat container">
 
-			<div className="chat-welcome-bar">
-				<div className="chat-welcome-text">
-					<strong>💬 Conversación de vecinos</strong>
-					<span>
-						Comparte información y mantente conectado.
-					</span>
+			<header className="chat-top">
+				<div className="chat-top-left">
+					<div className="chat-main-icon">🌿</div>
+
+					<div>
+						<h1>Chat de Vecinos</h1>
+						<p>Villa Los Agapantos</p>
+					</div>
 				</div>
 
-				<div className="chat-live">
+				<div className="chat-online">
 					<span className="online-dot"></span>
-					En línea
+					<span>En línea</span>
+				</div>
+			</header>
+
+			<div className="chat-notice">
+				<div className="notice-icon">💬</div>
+
+				<div>
+					<strong>Conversemos entre vecinos</strong>
+					<span>
+						Comparte información y mantente conectado
+						con tu comunidad.
+					</span>
 				</div>
 			</div>
 
@@ -196,39 +246,52 @@ function App() {
 					return (
 						<div
 							key={message.id}
-							className={`message ${
+							className={`message-row ${
 								isMine
-									? "my-message"
-									: "other-message"
+									? "message-row-mine"
+									: "message-row-other"
 							}`}
 						>
-							<div className="message-meta">
+							{!isMine && (
+								<div className="avatar avatar-other">
+									{getInitial(message.user)}
+								</div>
+							)}
 
-								<span className="message-user">
-									{isMine
-										? "YO"
-										: message.user}
-								</span>
+							<div className="message-content">
 
-								<span className="message-time">
-									{new Date().toLocaleTimeString(
-										"es-CL",
-										{
-											hour: "2-digit",
-											minute: "2-digit",
-										},
+								<div className="message-author">
+									{isMine ? "YO" : message.user}
+								</div>
+
+								<div
+									className={`message-bubble ${
+										isMine
+											? "bubble-mine"
+											: "bubble-other"
+									}`}
+								>
+									{message.content}
+								</div>
+
+								<div className="message-info">
+									<span>
+										{messageTimes[message.id] ||
+											formatTime()}
+									</span>
+
+									{isMine && (
+										<span className="message-check">
+											✓✓
+										</span>
 									)}
-								</span>
+								</div>
 
-							</div>
-
-							<div className="message-bubble">
-								{message.content}
 							</div>
 
 							{isMine && (
-								<div className="message-status">
-									✓✓
+								<div className="avatar avatar-mine">
+									{getInitial(name)}
 								</div>
 							)}
 						</div>
@@ -236,20 +299,24 @@ function App() {
 				})}
 
 				{typingUser && (
-					<div className="typing-indicator">
-						<span className="typing-icon">✍️</span>
+					<div className="typing-row">
+						<div className="typing-avatar">
+							{getInitial(typingUser)}
+						</div>
 
-						<span className="typing-name">
-							{typingUser}
-						</span>
+						<div className="typing-box">
+							<span className="typing-name">
+								{typingUser}
+							</span>
 
-						<span>está escribiendo</span>
+							<span>está escribiendo</span>
 
-						<span className="typing-dots">
-							<span>•</span>
-							<span>•</span>
-							<span>•</span>
-						</span>
+							<span className="typing-dots">
+								<span>•</span>
+								<span>•</span>
+								<span>•</span>
+							</span>
+						</div>
 					</div>
 				)}
 
@@ -278,10 +345,15 @@ function App() {
 						role: "user",
 					};
 
-					setMessages((messages) => [
-						...messages,
+					setMessages((currentMessages) => [
+						...currentMessages,
 						chatMessage,
 					]);
+
+					setMessageTimes((times) => ({
+						...times,
+						[chatMessage.id]: formatTime(),
+					}));
 
 					socket.send(
 						JSON.stringify({
@@ -295,7 +367,6 @@ function App() {
 					content.value = "";
 				}}
 			>
-
 				<div className="input-wrapper">
 					<input
 						type="text"
@@ -313,7 +384,6 @@ function App() {
 				>
 					Enviar
 				</button>
-
 			</form>
 
 			<div className="chat-security">
