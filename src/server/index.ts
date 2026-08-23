@@ -7,25 +7,31 @@ import {
 
 import type { ChatMessage, Message } from "../shared";
 
+type TypingMessage = {
+	type: "typing";
+	user: string;
+	typing: boolean;
+};
+
 export class Chat extends Server<Env> {
 	static options = { hibernate: true };
 
 	messages = [] as ChatMessage[];
 
-	broadcastMessage(message: Message, exclude?: string[]) {
+	broadcastMessage(message: Message | TypingMessage, exclude?: string[]) {
 		this.broadcast(JSON.stringify(message), exclude);
 	}
 
 	onStart() {
-		// this is where you can initialize things that need to be done before the server starts
-		// for example, load previous messages from a database or a service
-
-		// create the messages table if it doesn't exist
 		this.ctx.storage.sql.exec(
-			`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, user TEXT, role TEXT, content TEXT)`,
+			`CREATE TABLE IF NOT EXISTS messages (
+				id TEXT PRIMARY KEY,
+				user TEXT,
+				role TEXT,
+				content TEXT
+			)`,
 		);
 
-		// load the messages from the database
 		this.messages = this.ctx.storage.sql
 			.exec(`SELECT * FROM messages`)
 			.toArray() as ChatMessage[];
@@ -41,23 +47,29 @@ export class Chat extends Server<Env> {
 	}
 
 	saveMessage(message: ChatMessage) {
-		// check if the message already exists
-		const existingMessage = this.messages.find((m) => m.id === message.id);
+		const existingMessage = this.messages.find(
+			(m) => m.id === message.id,
+		);
+
 		if (existingMessage) {
 			this.messages = this.messages.map((m) => {
 				if (m.id === message.id) {
 					return message;
 				}
+
 				return m;
 			});
 		} else {
 			this.messages.push(message);
 		}
 
-		// Use parameterized queries to prevent SQL injection
 		this.ctx.storage.sql.exec(
-			`INSERT INTO messages (id, user, role, content) VALUES (?, ?, ?, ?)
-			 ON CONFLICT (id) DO UPDATE SET content = ?`,
+			`INSERT INTO messages
+				(id, user, role, content)
+			VALUES (?, ?, ?, ?)
+			ON CONFLICT (id)
+			DO UPDATE SET
+				content = ?`,
 			message.id,
 			message.user,
 			message.role,
@@ -67,12 +79,21 @@ export class Chat extends Server<Env> {
 	}
 
 	onMessage(connection: Connection, message: WSMessage) {
-		// let's broadcast the raw message to everyone else
+		const parsed = JSON.parse(message as string) as
+			| Message
+			| TypingMessage;
+
+		if (parsed.type === "typing") {
+			this.broadcastMessage(parsed, [connection.id]);
+			return;
+		}
+
 		this.broadcast(message);
 
-		// let's update our local messages store
-		const parsed = JSON.parse(message as string) as Message;
-		if (parsed.type === "add" || parsed.type === "update") {
+		if (
+			parsed.type === "add" ||
+			parsed.type === "update"
+		) {
 			this.saveMessage(parsed);
 		}
 	}
