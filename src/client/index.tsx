@@ -116,10 +116,19 @@ function App() {
 	return (
 		<div className="chat container">
 			{messages.map((message) => (
-				<div key={message.id} className="row message">
-					<div className="two columns user">{message.user}</div>
+				<div
+					key={message.id}
+					className={`message ${
+						message.user === name
+							? "my-message"
+							: "other-message"
+					}`}
+				>
+					<div className="message-user">
+						{message.user === name ? "YO" : message.user}
+					</div>
 
-					<div className="ten columns">
+					<div className="message-bubble">
 						{message.content}
 					</div>
 				</div>
