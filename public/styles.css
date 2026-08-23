@@ -405,6 +405,78 @@ body {
 	.name-box form {
 		flex-direction: column;
 	}
+	/* BURBUJAS DEL CHAT */
+
+.message {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 14px;
+	padding: 0;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.message-user {
+	font-size: 12px;
+	font-weight: 600;
+	color: #657269;
+	margin-bottom: 4px;
+}
+
+.message-bubble {
+	max-width: 70%;
+	padding: 10px 14px;
+	border-radius: 16px;
+	font-size: 14px;
+	line-height: 1.4;
+	box-sizing: border-box;
+	word-wrap: break-word;
+}
+
+/* MENSAJES PROPIOS */
+
+.my-message {
+	align-items: flex-end;
+}
+
+.my-message .message-user {
+	text-align: right;
+}
+
+.my-message .message-bubble {
+	background: #55745b;
+	color: #ffffff;
+	border-bottom-right-radius: 5px;
+}
+
+/* MENSAJES DE OTROS VECINOS */
+
+.other-message {
+	align-items: flex-start;
+}
+
+.other-message .message-user {
+	text-align: left;
+}
+
+.other-message .message-bubble {
+	background: #f0f4f0;
+	color: #354039;
+	border-bottom-left-radius: 5px;
+}
+
+/* CELULARES */
+
+@media screen and (max-width: 700px) {
+	.message-bubble {
+		max-width: 82%;
+		font-size: 14px;
+	}
+
+	.message-user {
+		font-size: 11px;
+	}
+}
 
 	.name-box input,
 	.name-box button {
