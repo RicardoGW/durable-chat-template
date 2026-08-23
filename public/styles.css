@@ -14,15 +14,15 @@ body {
 }
 
 /* =========================================
-   CONTENEDOR PRINCIPAL
+   CHAT PRINCIPAL
 ========================================= */
 
 .chat {
 	width: 100%;
-	max-width: 1000px;
+	max-width: 920px;
 	height: 100vh;
 	margin: 0 auto;
-	padding: 16px;
+	padding: 14px;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
@@ -31,7 +31,7 @@ body {
 }
 
 /* =========================================
-   BARRA SUPERIOR
+   ENCABEZADO
 ========================================= */
 
 .chat-welcome-bar {
@@ -40,47 +40,47 @@ body {
 	align-items: center;
 	justify-content: space-between;
 	gap: 15px;
-	padding: 14px 18px;
-	margin-bottom: 10px;
+	padding: 12px 16px;
+	margin-bottom: 8px;
 	background: #ffffff;
 	border: 1px solid #dce7de;
-	border-radius: 16px;
-	box-shadow: 0 4px 14px rgba(46, 76, 54, 0.07);
+	border-radius: 15px;
+	box-shadow: 0 3px 12px rgba(46, 76, 54, 0.07);
 }
 
 .chat-welcome-text {
 	display: flex;
 	flex-direction: column;
-	gap: 3px;
+	gap: 2px;
 }
 
 .chat-welcome-text strong {
-	font-size: 17px;
+	font-size: 16px;
 	color: #365c3f;
 }
 
 .chat-welcome-text span {
-	font-size: 12px;
+	font-size: 11px;
 	color: #7b887f;
 }
 
 .chat-live {
 	display: flex;
 	align-items: center;
-	gap: 7px;
-	padding: 7px 11px;
-	border-radius: 20px;
+	gap: 6px;
+	padding: 6px 10px;
+	border-radius: 18px;
 	background: #f1f8f2;
 	border: 1px solid #d9e9dc;
 	color: #4d7956;
-	font-size: 11px;
+	font-size: 10px;
 	font-weight: 600;
 	white-space: nowrap;
 }
 
 .online-dot {
-	width: 8px;
-	height: 8px;
+	width: 7px;
+	height: 7px;
 	display: inline-block;
 	border-radius: 50%;
 	background: #50ad61;
@@ -88,7 +88,7 @@ body {
 }
 
 /* =========================================
-   ÁREA DE CONVERSACIÓN
+   ÁREA DE MENSAJES
 ========================================= */
 
 .messages-area {
@@ -97,7 +97,7 @@ body {
 	height: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
-	padding: 12px 10px;
+	padding: 8px 8px;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
@@ -106,7 +106,7 @@ body {
 }
 
 .messages-area::-webkit-scrollbar {
-	width: 7px;
+	width: 6px;
 }
 
 .messages-area::-webkit-scrollbar-track {
@@ -126,7 +126,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	margin-bottom: 15px;
+	margin-bottom: 9px;
 	box-sizing: border-box;
 }
 
@@ -139,19 +139,19 @@ body {
 }
 
 /* =========================================
-   NOMBRE + HORA
+   NOMBRE Y HORA
 ========================================= */
 
 .message-meta {
 	display: flex;
 	align-items: baseline;
-	gap: 7px;
-	margin-bottom: 4px;
-	padding: 0 5px;
+	gap: 6px;
+	margin-bottom: 2px;
+	padding: 0 4px;
 }
 
 .message-user {
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 700;
 }
 
@@ -164,7 +164,7 @@ body {
 }
 
 .message-time {
-	font-size: 10px;
+	font-size: 9px;
 	color: #98a39b;
 }
 
@@ -173,32 +173,39 @@ body {
 ========================================= */
 
 .message-bubble {
-	max-width: 68%;
-	padding: 9px 13px;
-	border-radius: 15px;
-	font-size: 14px;
-	line-height: 1.45;
+	max-width: 62%;
+	padding: 7px 11px;
+	border-radius: 13px;
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.35;
 	word-break: break-word;
 	box-sizing: border-box;
-	box-shadow: 0 2px 7px rgba(43, 66, 49, 0.06);
+	transition: box-shadow 0.2s ease;
 }
 
 /* TU MENSAJE */
 
 .my-message .message-bubble {
 	background: #dcefe0;
-	border: 1px solid #c5dfca;
-	color: #315b3d;
+	border: 1px solid #b9dbbf;
+	color: #285c35;
 	border-bottom-right-radius: 5px;
+	text-shadow: 0 0 5px rgba(74, 160, 88, 0.28);
+	box-shadow:
+		0 2px 7px rgba(55, 105, 63, 0.08),
+		0 0 8px rgba(93, 177, 103, 0.12);
 }
 
 /* MENSAJE DEL VECINO */
 
 .other-message .message-bubble {
 	background: #ffffff;
-	border: 1px solid #dce5de;
-	color: #35433a;
+	border: 1px solid #d7e2da;
+	color: #354f3c;
 	border-bottom-left-radius: 5px;
+	text-shadow: 0 0 4px rgba(76, 130, 86, 0.14);
+	box-shadow: 0 2px 6px rgba(43, 66, 49, 0.06);
 }
 
 /* =========================================
@@ -206,34 +213,34 @@ body {
 ========================================= */
 
 .message-status {
-	margin-top: 3px;
-	padding-right: 5px;
-	font-size: 10px;
+	margin-top: 1px;
+	padding-right: 4px;
+	font-size: 9px;
 	font-weight: 700;
 	letter-spacing: -2px;
 	color: #4e9c5b;
 }
 
 /* =========================================
-   "ESTÁ ESCRIBIENDO..."
+   ESTÁ ESCRIBIENDO
 ========================================= */
 
 .typing-indicator {
 	align-self: flex-start;
 	display: flex;
 	align-items: center;
-	gap: 5px;
-	margin: 0 0 10px 5px;
-	padding: 7px 11px;
+	gap: 4px;
+	margin: 1px 0 7px 4px;
+	padding: 6px 9px;
 	background: #f5f9f5;
 	border: 1px solid #dce8de;
-	border-radius: 13px;
+	border-radius: 12px;
 	color: #7c887f;
-	font-size: 11px;
+	font-size: 10px;
 }
 
 .typing-icon {
-	font-size: 13px;
+	font-size: 12px;
 }
 
 .typing-name {
@@ -248,7 +255,7 @@ body {
 }
 
 .typing-dots span {
-	font-size: 14px;
+	font-size: 13px;
 	color: #559e61;
 	animation: typing 1.2s infinite;
 }
@@ -276,42 +283,42 @@ body {
 }
 
 /* =========================================
-   CAJA PARA ESCRIBIR
+   CAJA DE ESCRITURA
 ========================================= */
 
 .chat-form {
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	margin: 4px 0 0;
-	padding: 7px;
+	gap: 7px;
+	margin: 3px 0 0;
+	padding: 6px;
 	background: #ffffff;
 	border: 1px solid #dce6de;
-	border-radius: 14px;
-	box-shadow: 0 3px 12px rgba(43, 76, 51, 0.07);
+	border-radius: 13px;
+	box-shadow: 0 3px 10px rgba(43, 76, 51, 0.06);
 	box-sizing: border-box;
 }
 
 .my-input-text {
 	flex: 1;
 	width: auto !important;
-	height: 43px !important;
+	height: 40px !important;
 	margin: 0 !important;
-	padding: 0 14px !important;
+	padding: 0 13px !important;
 	box-sizing: border-box;
 	border: 1px solid #d2ddd4 !important;
-	border-radius: 10px !important;
+	border-radius: 9px !important;
 	background: #fafcfa;
 	color: #354039;
-	font-size: 14px;
+	font-size: 13px;
 }
 
 .my-input-text:focus {
 	border-color: #78a47f !important;
 	outline: none;
 	background: #ffffff;
-	box-shadow: 0 0 0 3px rgba(120, 164, 127, 0.12);
+	box-shadow: 0 0 0 3px rgba(120, 164, 127, 0.11);
 }
 
 .my-input-text::placeholder {
@@ -319,16 +326,16 @@ body {
 }
 
 .send-message {
-	flex: 0 0 82px;
-	width: 82px !important;
-	height: 43px !important;
+	flex: 0 0 78px;
+	width: 78px !important;
+	height: 40px !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	border: none !important;
-	border-radius: 10px !important;
+	border-radius: 9px !important;
 	background: #4f8758 !important;
 	color: #ffffff !important;
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: 700;
 	cursor: pointer;
 }
@@ -344,8 +351,8 @@ body {
 .chat-security {
 	flex-shrink: 0;
 	text-align: center;
-	padding: 6px 4px 1px;
-	font-size: 10px;
+	padding: 5px 4px 1px;
+	font-size: 9px;
 	color: #8c968f;
 }
 
@@ -366,75 +373,75 @@ body {
 
 .name-box {
 	width: 100%;
-	max-width: 520px;
-	padding: 32px;
+	max-width: 500px;
+	padding: 30px;
 	background: #ffffff;
 	border: 1px solid #dce7de;
-	border-radius: 20px;
-	box-shadow: 0 7px 25px rgba(43, 76, 51, 0.1);
+	border-radius: 19px;
+	box-shadow: 0 6px 22px rgba(43, 76, 51, 0.09);
 	box-sizing: border-box;
 	text-align: center;
 }
 
 .name-icon {
-	font-size: 42px;
-	margin-bottom: 6px;
+	font-size: 40px;
+	margin-bottom: 5px;
 }
 
 .name-welcome {
-	margin-bottom: 7px;
-	font-size: 12px;
+	margin-bottom: 6px;
+	font-size: 11px;
 	font-weight: 700;
 	color: #568160;
 	letter-spacing: 0.4px;
 }
 
 .name-box h2 {
-	margin: 0 0 10px;
-	font-size: 26px;
+	margin: 0 0 9px;
+	font-size: 25px;
 	color: #315b3d;
 }
 
 .name-box p {
-	margin: 0 0 20px;
-	font-size: 14px;
+	margin: 0 0 18px;
+	font-size: 13px;
 	line-height: 1.5;
 	color: #69766d;
 }
 
 .name-box form {
 	display: flex;
-	gap: 8px;
+	gap: 7px;
 	margin: 0;
 }
 
 .name-box input {
 	flex: 1;
-	height: 44px;
+	height: 42px;
 	margin: 0;
-	padding: 0 14px;
+	padding: 0 13px;
 	box-sizing: border-box;
 	border: 1px solid #d2ddd4;
-	border-radius: 10px;
+	border-radius: 9px;
 	background: #fafcfa;
-	font-size: 14px;
+	font-size: 13px;
 }
 
 .name-box input:focus {
 	border-color: #78a47f;
 	outline: none;
-	box-shadow: 0 0 0 3px rgba(120, 164, 127, 0.12);
+	box-shadow: 0 0 0 3px rgba(120, 164, 127, 0.11);
 }
 
 .name-box button {
-	height: 44px;
+	height: 42px;
 	margin: 0;
-	padding: 0 18px;
+	padding: 0 17px;
 	border: none;
-	border-radius: 10px;
+	border-radius: 9px;
 	background: #4f8758;
 	color: #ffffff;
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: 700;
 	cursor: pointer;
 }
@@ -444,11 +451,13 @@ body {
 }
 
 /* =========================================
-   CELULARES
+   MÓVIL
+   Aquí mantenemos tamaños cómodos
 ========================================= */
 
 @media screen and (max-width: 700px) {
 	.chat {
+		max-width: 100%;
 		padding: 7px;
 	}
 
@@ -494,8 +503,9 @@ body {
 
 	.message-bubble {
 		max-width: 78%;
-		padding: 8px 11px;
+		padding: 9px 11px;
 		font-size: 14px;
+		font-weight: 700;
 		border-radius: 14px;
 	}
 
