@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { usePartySocket } from "partysocket/react";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	BrowserRouter,
 	Routes,
@@ -12,20 +12,47 @@ import { nanoid } from "nanoid";
 
 import { type ChatMessage, type Message } from "../shared";
 
+type TypingMessage = {
+	type: "typing";
+	user: string;
+};
+
 function App() {
 	const [name, setName] = useState("");
 	const [nameConfirmed, setNameConfirmed] = useState(false);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const [typingUser, setTypingUser] = useState("");
 	const { room } = useParams();
+	const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const socket = usePartySocket({
 		party: "chat",
 		room,
 		onMessage: (evt) => {
-			const message = JSON.parse(evt.data as string) as Message;
+			const message = JSON.parse(evt.data as string) as
+				| Message
+				| TypingMessage;
+
+			if (message.type === "typing") {
+				if (message.user !== name) {
+					setTypingUser(message.user);
+
+					if (typingTimeout.current) {
+						clearTimeout(typingTimeout.current);
+					}
+
+					typingTimeout.current = setTimeout(() => {
+						setTypingUser("");
+					}, 2000);
+				}
+
+				return;
+			}
 
 			if (message.type === "add") {
-				const foundIndex = messages.findIndex((m) => m.id === message.id);
+				const foundIndex = messages.findIndex(
+					(m) => m.id === message.id,
+				);
 
 				if (foundIndex === -1) {
 					setMessages((messages) => [
@@ -63,11 +90,19 @@ function App() {
 							: m,
 					),
 				);
-			} else {
+			} else if (message.type === "all") {
 				setMessages(message.messages);
 			}
 		},
 	});
+
+	useEffect(() => {
+		return () => {
+			if (typingTimeout.current) {
+				clearTimeout(typingTimeout.current);
+			}
+		};
+	}, []);
 
 	if (!nameConfirmed) {
 		return (
@@ -75,11 +110,13 @@ function App() {
 				<div className="name-box">
 					<div className="name-icon">🌿</div>
 
+					<div className="name-welcome">Villa Los Agapantos</div>
+
 					<h2>Bienvenido al chat</h2>
 
 					<p>
-						Para participar en el chat de Villa Los Agapantos,
-						indica el nombre con el que quieres aparecer.
+						Conversemos entre vecinos y mantengámonos
+						conectados como comunidad.
 					</p>
 
 					<form
@@ -98,7 +135,7 @@ function App() {
 							type="text"
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder="Escribe tu nombre"
+							placeholder="¿Cómo te llamas?"
 							autoComplete="name"
 							autoFocus
 							maxLength={30}
@@ -113,29 +150,84 @@ function App() {
 		);
 	}
 
+	const sendTyping = (isTyping: boolean) => {
+		socket.send(
+			JSON.stringify({
+				type: "typing",
+				user: name,
+				typing: isTyping,
+			}),
+		);
+	};
+
 	return (
 		<div className="chat container">
-			{messages.map((message) => (
-				<div
-					key={message.id}
-					className={`message ${
-						message.user === name
-							? "my-message"
-							: "other-message"
-					}`}
-				>
-					<div className="message-user">
-						{message.user === name ? "YO" : message.user}
-					</div>
-
-					<div className="message-bubble">
-						{message.content}
-					</div>
+			<div className="chat-welcome-bar">
+				<div>
+					<strong>💬 Conversación de vecinos</strong>
+					<span>Comparte información y mantente conectado.</span>
 				</div>
-			))}
+
+				<div className="chat-live">
+					<span className="online-dot"></span>
+					En línea
+				</div>
+			</div>
+
+			<div className="messages-area">
+				{messages.map((message) => {
+					const isMine = message.user === name;
+
+					return (
+						<div
+							key={message.id}
+							className={`message ${
+								isMine ? "my-message" : "other-message"
+							}`}
+						>
+							<div className="message-meta">
+								<span className="message-user">
+									{isMine ? "YO" : message.user}
+								</span>
+
+								<span className="message-time">
+									{new Date().toLocaleTimeString("es-CL", {
+										hour: "2-digit",
+										minute: "2-digit",
+									})}
+								</span>
+							</div>
+
+							<div className="message-bubble">
+								{message.content}
+							</div>
+
+							{isMine && (
+								<div className="message-status">
+									✓✓
+								</div>
+							)}
+						</div>
+					);
+				})}
+
+				{typingUser && (
+					<div className="typing-indicator">
+						<span className="typing-name">
+							{typingUser}
+						</span>
+						<span>está escribiendo</span>
+						<span className="typing-dots">
+							<span>•</span>
+							<span>•</span>
+							<span>•</span>
+						</span>
+					</div>
+				)}
+			</div>
 
 			<form
-				className="row"
+				className="chat-form"
 				onSubmit={(e) => {
 					e.preventDefault();
 
@@ -165,21 +257,29 @@ function App() {
 						} satisfies Message),
 					);
 
+					sendTyping(false);
 					content.value = "";
 				}}
 			>
-				<input
-					type="text"
-					name="content"
-					className="ten columns my-input-text"
-					placeholder={`Hola ${name}, escribe un mensaje...`}
-					autoComplete="off"
-				/>
+				<div className="input-wrapper">
+					<input
+						type="text"
+						name="content"
+						className="my-input-text"
+						placeholder="Escribe un mensaje..."
+						autoComplete="off"
+						onInput={() => sendTyping(true)}
+					/>
+				</div>
 
-				<button type="submit" className="send-message two columns">
+				<button type="submit" className="send-message">
 					Enviar
 				</button>
 			</form>
+
+			<div className="chat-security">
+				🔒 Chat de la comunidad · Villa Los Agapantos
+			</div>
 		</div>
 	);
 }
@@ -188,6 +288,7 @@ createRoot(document.getElementById("root")!).render(
 	<BrowserRouter>
 		<Routes>
 			<Route path="/" element={<Navigate to={`/${nanoid()}`} />} />
+			<Route path="/:room" element={<App />} />
 			<Route path="/:room" element={<App />} />
 			<Route path="*" element={<Navigate to="/" />} />
 		</Routes>
