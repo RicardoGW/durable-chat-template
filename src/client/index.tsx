@@ -137,22 +137,9 @@ function App() {
 				return;
 			}
 
-			/* MENSAJES EXISTENTES */
-
+			/* Nunca mostrar historial recibido por una versión antigua del servidor. */
 			if (message.type === "all") {
-				setMessages(message.messages);
-
-				setMessageTimes((times) => {
-					const updated = { ...times };
-
-					for (const item of message.messages) {
-						if (!updated[item.id]) {
-							updated[item.id] = formatTime();
-						}
-					}
-
-					return updated;
-				});
+				return;
 			}
 		},
 	});
@@ -219,6 +206,16 @@ function App() {
 							const cleanName = name.trim();
 
 							if (cleanName.length >= 2) {
+								/* Registra esta conexión sin solicitar historial. */
+								socket.send(
+									JSON.stringify({
+										type: "join",
+										user: cleanName,
+									}),
+								);
+
+								setMessages([]);
+								setMessageTimes({});
 								setName(cleanName);
 								setNameConfirmed(true);
 							}
