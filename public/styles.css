@@ -911,3 +911,59 @@ body {
   height: 98px;
   background: rgba(46, 88, 57, .30);
 }
+/*
+  PEGAR AL FINAL DE styles.css
+  Solo modifica la zona de mensajes; no toca el encabezado ni el logo.
+*/
+
+.messages-area {
+  margin: 0 2px;
+  padding: 14px 16px 12px;
+  background: rgba(255, 255, 255, .62);
+  border: 1px solid rgba(208, 226, 214, .78);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .80);
+}
+
+/* Se muestra antes de los mensajes, sin cambiar el HTML ni el JavaScript. */
+.messages-area::before {
+  content: "Bienvenido/a al chat de Villa Los Agapantos\A Conversa con respeto y entre vecinos.\A\A Hoy";
+  align-self: center;
+  margin: 1px 0 14px;
+  padding: 8px 14px;
+  white-space: pre-line;
+  border: 1px solid #d6e7d9;
+  border-radius: 12px;
+  background: rgba(248, 252, 249, .92);
+  color: #698071;
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+  box-shadow: 0 2px 7px rgba(54, 95, 64, .06);
+}
+
+.message {
+  margin-bottom: 12px;
+}
+
+.message-meta {
+  margin-bottom: 4px;
+}
+
+.message-bubble {
+  box-shadow: 0 3px 9px rgba(46, 79, 54, .09);
+}
+
+@media (max-width: 700px) {
+  .messages-area {
+    margin: 0;
+    padding: 11px 9px 9px;
+    border-radius: 12px;
+  }
+
+  .messages-area::before {
+    margin-bottom: 11px;
+    padding: 7px 10px;
+    font-size: 10px;
+  }
+}
