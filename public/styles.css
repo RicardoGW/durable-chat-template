@@ -31,56 +31,102 @@ body {
 }
 
 /* =========================================
-   ENCABEZADO
+   ENCABEZADO FLORAL
 ========================================= */
 
 .chat-welcome-bar {
+	position: relative;
 	flex-shrink: 0;
+	min-height: 118px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 15px;
-	padding: 12px 16px;
-	margin-bottom: 8px;
-	background: #ffffff;
-	border: 1px solid #dce7de;
-	border-radius: 15px;
-	box-shadow: 0 3px 12px rgba(46, 76, 54, 0.07);
+	padding: 18px 22px;
+	margin-bottom: 10px;
+	border-radius: 18px;
+	overflow: hidden;
+	background:
+		linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.94),
+			rgba(255, 255, 255, 0.62),
+			rgba(255, 255, 255, 0.25)
+		),
+		url("/fondo-chat.jpg") center center / cover no-repeat;
+	border: 1px solid rgba(255, 255, 255, 0.9);
+	box-shadow: 0 5px 18px rgba(46, 76, 54, 0.12);
 }
 
+/* Capa suave para que el texto siempre se lea */
+
+.chat-welcome-bar::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		90deg,
+		rgba(255, 255, 255, 0.76) 0%,
+		rgba(255, 255, 255, 0.38) 52%,
+		rgba(255, 255, 255, 0.12) 100%
+	);
+	pointer-events: none;
+}
+
+/* =========================================
+   LOGO
+========================================= */
+
 .chat-welcome-text {
+	position: relative;
+	z-index: 2;
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
+	align-items: center;
+	gap: 14px;
+}
+
+.chat-welcome-text::before {
+	content: "";
+	display: block;
+	width: 108px;
+	height: 72px;
+	flex-shrink: 0;
+	background: url("/logo-agapantos.jpg") center center / contain no-repeat;
+	filter: drop-shadow(0 3px 5px rgba(35, 70, 40, 0.18));
 }
 
 .chat-welcome-text strong {
-	font-size: 16px;
-	color: #365c3f;
+	display: none;
 }
 
 .chat-welcome-text span {
-	font-size: 11px;
-	color: #7b887f;
+	display: none;
 }
 
+/* =========================================
+   ACCESO / ESTADO
+========================================= */
+
 .chat-live {
+	position: relative;
+	z-index: 2;
 	display: flex;
 	align-items: center;
-	gap: 6px;
-	padding: 6px 10px;
-	border-radius: 18px;
-	background: #f1f8f2;
-	border: 1px solid #d9e9dc;
-	color: #4d7956;
-	font-size: 10px;
-	font-weight: 600;
+	gap: 7px;
+	padding: 8px 12px;
+	border-radius: 20px;
+	background: rgba(255, 255, 255, 0.88);
+	border: 1px solid rgba(255, 255, 255, 0.95);
+	color: #477050;
+	font-size: 11px;
+	font-weight: 700;
 	white-space: nowrap;
+	box-shadow: 0 3px 10px rgba(45, 80, 51, 0.10);
 }
 
 .online-dot {
-	width: 7px;
-	height: 7px;
+	width: 8px;
+	height: 8px;
 	display: inline-block;
 	border-radius: 50%;
 	background: #50ad61;
@@ -97,7 +143,7 @@ body {
 	height: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
-	padding: 8px 8px;
+	padding: 10px 8px;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
@@ -116,6 +162,31 @@ body {
 .messages-area::-webkit-scrollbar-thumb {
 	background: #c9d8cc;
 	border-radius: 10px;
+}
+
+/* =========================================
+   TÍTULO DEL CHAT
+========================================= */
+
+.messages-area::before {
+	content: "Chat de Vecinos";
+	display: block;
+	align-self: center;
+	margin: 2px 0 3px;
+	font-size: 20px;
+	font-weight: 700;
+	color: #315b3d;
+	text-shadow: 0 1px 4px rgba(78, 150, 87, 0.18);
+}
+
+.messages-area::after {
+	content: "Conversemos entre vecinos • Comunidad • Seguridad • Convivencia";
+	display: block;
+	align-self: center;
+	order: -1;
+	margin-bottom: 10px;
+	font-size: 11px;
+	color: #7a897f;
 }
 
 /* =========================================
@@ -184,9 +255,7 @@ body {
 	transition: box-shadow 0.2s ease;
 }
 
-/* =========================================
-   TU MENSAJE — VERDE LUMINOSO
-========================================= */
+/* TU MENSAJE */
 
 .my-message .message-bubble {
 	background: #dcefe0;
@@ -204,9 +273,7 @@ body {
 		0 0 10px rgba(83, 190, 96, 0.22);
 }
 
-/* =========================================
-   MENSAJE DEL VECINO — BRILLO SUAVE
-========================================= */
+/* MENSAJE DEL VECINO */
 
 .other-message .message-bubble {
 	background: #ffffff;
@@ -476,17 +543,20 @@ body {
 	}
 
 	.chat-welcome-bar {
-		padding: 11px 12px;
+		min-height: 92px;
+		padding: 10px 12px;
 		margin-bottom: 7px;
 		border-radius: 13px;
+		background-position: center;
 	}
 
-	.chat-welcome-text strong {
-		font-size: 14px;
+	.chat-welcome-text {
+		gap: 7px;
 	}
 
-	.chat-welcome-text span {
-		font-size: 10px;
+	.chat-welcome-text::before {
+		width: 90px;
+		height: 62px;
 	}
 
 	.chat-live {
@@ -496,6 +566,16 @@ body {
 
 	.messages-area {
 		padding: 9px 2px;
+	}
+
+	.messages-area::before {
+		font-size: 18px;
+	}
+
+	.messages-area::after {
+		font-size: 10px;
+		text-align: center;
+		margin-bottom: 9px;
 	}
 
 	.message {
