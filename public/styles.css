@@ -873,3 +873,41 @@ body {
 		width: 100%;
 	}
 }
+/* Logo transparente: pegar al final de styles.css */
+.chat-welcome-text {
+  position: absolute;
+  z-index: 2;
+  left: 24px;
+  top: 50%;
+  width: 320px;
+  height: 132px;
+  padding: 0;
+  transform: translateY(-50%);
+  background: url("/logo-agapantos-transparente.png") center / contain no-repeat !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Quita el JPG blanco anterior */
+.chat-welcome-text > img,
+.chat-welcome-text::before {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+}
+
+.chat-welcome-text strong,
+.chat-welcome-text span {
+  display: none !important;
+}
+
+.chat-welcome-text::after {
+  content: "";
+  position: absolute;
+  right: -20px;
+  top: 17px;
+  width: 1px;
+  height: 98px;
+  background: rgba(46, 88, 57, .30);
+}
