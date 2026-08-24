@@ -64,7 +64,7 @@ body {
 }
 
 /* =========================================================
-   LOGO
+   LOGO - AJUSTADO
 ========================================================= */
 
 .chat-welcome-text {
@@ -75,14 +75,14 @@ body {
 
 	transform: translateY(-50%);
 
-	width: 220px;
-	height: 105px;
+	width: 235px;
+	height: 112px;
 
 	display: flex;
 	align-items: center;
 	justify-content: center;
 
-	background: rgba(255, 255, 255, 0.90);
+	background: rgba(255, 255, 255, 0.94);
 
 	border-radius: 16px;
 
@@ -104,8 +104,12 @@ body {
 
 	background-image: url("/logo-agapantos.jpg");
 	background-repeat: no-repeat;
+
+	/*
+	   El logo queda completo y sin cortar
+	*/
 	background-position: center center;
-	background-size: 155% auto;
+	background-size: 125% auto;
 }
 
 .chat-welcome-text strong,
@@ -169,7 +173,7 @@ body {
 
 	position: absolute;
 
-	left: 260px;
+	left: 275px;
 	bottom: 31px;
 
 	z-index: 3;
@@ -193,7 +197,7 @@ body {
 
 	position: absolute;
 
-	left: 260px;
+	left: 275px;
 	bottom: 14px;
 
 	z-index: 3;
@@ -731,7 +735,7 @@ body {
 	}
 
 	.chat-welcome-text::before {
-		background-size: 155% auto;
+		background-size: 125% auto;
 	}
 
 	.chat-welcome-bar::before {
