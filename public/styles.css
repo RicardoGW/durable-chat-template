@@ -14,7 +14,7 @@ body {
 }
 
 /* =========================================================
-   CONTENEDOR GENERAL
+   CHAT GENERAL
 ========================================================= */
 
 .chat {
@@ -51,36 +51,35 @@ body {
 	background:
 		linear-gradient(
 			90deg,
-			rgba(255, 255, 255, 0.76) 0%,
-			rgba(255, 255, 255, 0.34) 48%,
-			rgba(255, 255, 255, 0.04) 100%
+			rgba(255, 255, 255, 0.93) 0%,
+			rgba(255, 255, 255, 0.72) 27%,
+			rgba(255, 255, 255, 0.30) 53%,
+			rgba(255, 255, 255, 0.05) 100%
 		),
 		url("/fondo-chat.jpg") center center / cover no-repeat;
 
-	border: 1px solid rgba(255, 255, 255, 0.9);
+	border: 1px solid rgba(255, 255, 255, 0.95);
 
 	box-shadow:
 		0 7px 22px rgba(48, 79, 56, 0.14);
 }
 
 /* =========================================================
-   LOGO INTEGRADO EN EL FONDO
+   ZONA DEL LOGO
 ========================================================= */
 
 .chat-welcome-text {
 	position: absolute;
 
-	left: 28px;
+	left: 22px;
 	top: 50%;
 
 	transform: translateY(-50%);
 
-	width: 300px;
-	height: 125px;
+	width: 330px;
+	height: 135px;
 
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	display: block;
 
 	background: transparent;
 
@@ -94,56 +93,64 @@ body {
 	z-index: 2;
 }
 
+/* =========================================================
+   LOGO INTEGRADO
+========================================================= */
+
 .chat-welcome-text::before {
 	content: "";
 
-	display: block;
+	position: absolute;
 
-	width: 100%;
-	height: 100%;
+	left: 0;
+	top: 0;
+
+	width: 330px;
+	height: 135px;
 
 	background-image: url("/logo-agapantos.jpg");
 	background-repeat: no-repeat;
 	background-position: center center;
-	background-size: contain;
+	background-size: 100% auto;
 
 	/*
-	   El blanco del JPG se mezcla con el fondo,
-	   para que el logo parezca integrado y no
-	   dentro de una caja blanca.
+	   El blanco del JPG se mezcla con el fondo claro
+	   del encabezado para eliminar visualmente
+	   el efecto de "caja".
 	*/
 	mix-blend-mode: multiply;
 
-	filter: drop-shadow(
-		0 2px 3px rgba(40, 70, 45, 0.12)
-	);
+	opacity: 0.97;
+
+	filter:
+		contrast(1.03)
+		saturate(1.04);
+
+	pointer-events: none;
 }
 
+/* Ocultamos los textos originales */
 .chat-welcome-text strong,
 .chat-welcome-text span {
 	display: none;
 }
 
 /* =========================================================
-   SEPARADOR ENTRE LOGO Y TÍTULO
+   SEPARADOR
 ========================================================= */
 
-.chat-welcome-bar {
-	--separador-x: 350px;
-}
-
-.chat-welcome-bar .chat-welcome-text::after {
+.chat-welcome-text::after {
 	content: "";
 
 	position: absolute;
 
-	right: -25px;
-	top: 15px;
+	right: -18px;
+	top: 18px;
 
 	width: 1px;
-	height: 95px;
+	height: 98px;
 
-	background: rgba(55, 93, 64, 0.28);
+	background: rgba(52, 94, 63, 0.32);
 }
 
 /* =========================================================
@@ -155,8 +162,8 @@ body {
 
 	position: absolute;
 
-	left: 390px;
-	top: 58px;
+	left: 370px;
+	top: 55px;
 
 	z-index: 3;
 
@@ -166,8 +173,8 @@ body {
 	color: #315c3d;
 
 	text-shadow:
-		0 1px 3px rgba(255, 255, 255, 0.92),
-		0 0 7px rgba(82, 154, 91, 0.18);
+		0 1px 3px rgba(255, 255, 255, 0.95),
+		0 0 7px rgba(82, 154, 91, 0.15);
 }
 
 /* =========================================================
@@ -179,7 +186,7 @@ body {
 
 	position: absolute;
 
-	left: 390px;
+	left: 370px;
 	top: 98px;
 
 	z-index: 3;
@@ -190,11 +197,11 @@ body {
 	color: #607267;
 
 	text-shadow:
-		0 1px 3px rgba(255, 255, 255, 0.95);
+		0 1px 3px rgba(255, 255, 255, 0.96);
 }
 
 /* =========================================================
-   ESTADO EN LÍNEA
+   EN LÍNEA
 ========================================================= */
 
 .chat-live {
@@ -203,7 +210,7 @@ body {
 	right: 20px;
 	top: 18px;
 
-	z-index: 4;
+	z-index: 5;
 
 	display: flex;
 	align-items: center;
@@ -211,9 +218,9 @@ body {
 
 	padding: 8px 14px;
 
-	background: rgba(255, 255, 255, 0.92);
+	background: rgba(255, 255, 255, 0.94);
 
-	border: 1px solid rgba(255, 255, 255, 0.95);
+	border: 1px solid rgba(255, 255, 255, 0.98);
 
 	border-radius: 999px;
 
@@ -241,7 +248,7 @@ body {
 }
 
 /* =========================================================
-   ÁREA DE MENSAJES
+   MENSAJES
 ========================================================= */
 
 .messages-area {
@@ -299,7 +306,7 @@ body {
 }
 
 /* =========================================================
-   NOMBRE + HORA
+   NOMBRE Y HORA
 ========================================================= */
 
 .message-meta {
@@ -351,7 +358,7 @@ body {
 }
 
 /* =========================================================
-   MENSAJES PROPIOS
+   MIS MENSAJES
 ========================================================= */
 
 .my-message .message-bubble {
@@ -395,7 +402,7 @@ body {
 }
 
 /* =========================================================
-   ✓✓
+   DOBLE CHECK
 ========================================================= */
 
 .message-status {
@@ -546,7 +553,7 @@ body {
 }
 
 /* =========================================================
-   BOTÓN ENVIAR
+   BOTÓN
 ========================================================= */
 
 .send-message {
@@ -735,7 +742,6 @@ body {
 	.chat {
 		width: 100%;
 		height: 100vh;
-
 		padding: 7px;
 	}
 
@@ -749,23 +755,26 @@ body {
 	}
 
 	.chat-welcome-text {
-		left: 10px;
+		left: 8px;
 
-		width: 155px;
-		height: 92px;
+		width: 160px;
+		height: 100px;
 	}
 
 	.chat-welcome-text::before {
-		background-size: contain;
+		width: 160px;
+		height: 100px;
+
+		background-size: 100% auto;
 	}
 
-	.chat-welcome-bar .chat-welcome-text::after {
+	.chat-welcome-text::after {
 		display: none;
 	}
 
 	.chat-welcome-bar::before {
 		left: 185px;
-		top: 48px;
+		top: 46px;
 
 		font-size: 21px;
 	}
@@ -823,25 +832,19 @@ body {
 
 	.chat-form {
 		padding: 5px;
-
 		gap: 5px;
-
 		border-radius: 11px;
 	}
 
 	.my-input-text {
 		height: 40px !important;
-
 		font-size: 13px;
 	}
 
 	.send-message {
 		flex-basis: 68px;
-
 		width: 68px !important;
-
 		height: 40px !important;
-
 		font-size: 11px;
 	}
 
