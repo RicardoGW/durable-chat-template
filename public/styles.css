@@ -39,57 +39,57 @@ body {
 
 	flex: 0 0 auto;
 
-	height: 145px;
-	min-height: 145px;
+	height: 155px;
+	min-height: 155px;
 
 	margin: 0 0 12px;
 	padding: 0;
 
-	border-radius: 20px;
+	border-radius: 22px;
 	overflow: hidden;
 
 	background:
 		linear-gradient(
 			90deg,
-			rgba(255, 255, 255, 0.88) 0%,
-			rgba(255, 255, 255, 0.35) 45%,
-			rgba(255, 255, 255, 0.08) 100%
+			rgba(255, 255, 255, 0.76) 0%,
+			rgba(255, 255, 255, 0.34) 48%,
+			rgba(255, 255, 255, 0.04) 100%
 		),
-		url("/fondo-chat.jpg") center 48% / cover no-repeat;
+		url("/fondo-chat.jpg") center center / cover no-repeat;
 
 	border: 1px solid rgba(255, 255, 255, 0.9);
 
 	box-shadow:
-		0 6px 20px rgba(48, 79, 56, 0.13);
+		0 7px 22px rgba(48, 79, 56, 0.14);
 }
 
 /* =========================================================
-   LOGO - AJUSTADO
+   LOGO INTEGRADO EN EL FONDO
 ========================================================= */
 
 .chat-welcome-text {
 	position: absolute;
 
-	left: 18px;
+	left: 28px;
 	top: 50%;
 
 	transform: translateY(-50%);
 
-	width: 235px;
-	height: 112px;
+	width: 300px;
+	height: 125px;
 
 	display: flex;
 	align-items: center;
 	justify-content: center;
 
-	background: rgba(255, 255, 255, 0.94);
+	background: transparent;
 
-	border-radius: 16px;
+	border: none;
+	border-radius: 0;
 
-	box-shadow:
-		0 5px 15px rgba(45, 72, 51, 0.13);
+	box-shadow: none;
 
-	overflow: hidden;
+	overflow: visible;
 
 	z-index: 2;
 }
@@ -104,17 +104,93 @@ body {
 
 	background-image: url("/logo-agapantos.jpg");
 	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: contain;
 
 	/*
-	   El logo queda completo y sin cortar
+	   El blanco del JPG se mezcla con el fondo,
+	   para que el logo parezca integrado y no
+	   dentro de una caja blanca.
 	*/
-	background-position: center center;
-	background-size: 125% auto;
+	mix-blend-mode: multiply;
+
+	filter: drop-shadow(
+		0 2px 3px rgba(40, 70, 45, 0.12)
+	);
 }
 
 .chat-welcome-text strong,
 .chat-welcome-text span {
 	display: none;
+}
+
+/* =========================================================
+   SEPARADOR ENTRE LOGO Y TÍTULO
+========================================================= */
+
+.chat-welcome-bar {
+	--separador-x: 350px;
+}
+
+.chat-welcome-bar .chat-welcome-text::after {
+	content: "";
+
+	position: absolute;
+
+	right: -25px;
+	top: 15px;
+
+	width: 1px;
+	height: 95px;
+
+	background: rgba(55, 93, 64, 0.28);
+}
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.chat-welcome-bar::before {
+	content: "Chat de Vecinos";
+
+	position: absolute;
+
+	left: 390px;
+	top: 58px;
+
+	z-index: 3;
+
+	font-size: 30px;
+	font-weight: 700;
+
+	color: #315c3d;
+
+	text-shadow:
+		0 1px 3px rgba(255, 255, 255, 0.92),
+		0 0 7px rgba(82, 154, 91, 0.18);
+}
+
+/* =========================================================
+   SUBTÍTULO
+========================================================= */
+
+.chat-welcome-bar::after {
+	content: "Conversemos entre vecinos • Comunidad • Seguridad • Convivencia";
+
+	position: absolute;
+
+	left: 390px;
+	top: 98px;
+
+	z-index: 3;
+
+	font-size: 12px;
+	font-weight: 500;
+
+	color: #607267;
+
+	text-shadow:
+		0 1px 3px rgba(255, 255, 255, 0.95);
 }
 
 /* =========================================================
@@ -124,10 +200,10 @@ body {
 .chat-live {
 	position: absolute;
 
-	right: 18px;
+	right: 20px;
 	top: 18px;
 
-	z-index: 3;
+	z-index: 4;
 
 	display: flex;
 	align-items: center;
@@ -135,7 +211,7 @@ body {
 
 	padding: 8px 14px;
 
-	background: rgba(255, 255, 255, 0.93);
+	background: rgba(255, 255, 255, 0.92);
 
 	border: 1px solid rgba(255, 255, 255, 0.95);
 
@@ -162,53 +238,6 @@ body {
 
 	box-shadow:
 		0 0 0 3px rgba(80, 174, 97, 0.16);
-}
-
-/* =========================================================
-   TÍTULO
-========================================================= */
-
-.chat-welcome-bar::before {
-	content: "Chat de Vecinos";
-
-	position: absolute;
-
-	left: 275px;
-	bottom: 31px;
-
-	z-index: 3;
-
-	font-size: 28px;
-	font-weight: 700;
-
-	color: #315c3d;
-
-	text-shadow:
-		0 1px 3px rgba(255, 255, 255, 0.9),
-		0 0 7px rgba(82, 154, 91, 0.20);
-}
-
-/* =========================================================
-   SUBTÍTULO
-========================================================= */
-
-.chat-welcome-bar::after {
-	content: "Conversemos entre vecinos • Comunidad • Seguridad • Convivencia";
-
-	position: absolute;
-
-	left: 275px;
-	bottom: 14px;
-
-	z-index: 3;
-
-	font-size: 11px;
-	font-weight: 500;
-
-	color: #607267;
-
-	text-shadow:
-		0 1px 3px rgba(255, 255, 255, 0.95);
 }
 
 /* =========================================================
@@ -319,10 +348,6 @@ body {
 	word-break: break-word;
 
 	box-sizing: border-box;
-
-	transition:
-		box-shadow 0.2s ease,
-		transform 0.15s ease;
 }
 
 /* =========================================================
@@ -715,41 +740,41 @@ body {
 	}
 
 	.chat-welcome-bar {
-		height: 112px;
-		min-height: 112px;
+		height: 125px;
+		min-height: 125px;
 
 		margin-bottom: 8px;
 
 		border-radius: 14px;
-
-		background-position: center center;
 	}
 
 	.chat-welcome-text {
 		left: 10px;
 
-		width: 145px;
-		height: 82px;
-
-		border-radius: 12px;
+		width: 155px;
+		height: 92px;
 	}
 
 	.chat-welcome-text::before {
-		background-size: 125% auto;
+		background-size: contain;
+	}
+
+	.chat-welcome-bar .chat-welcome-text::after {
+		display: none;
 	}
 
 	.chat-welcome-bar::before {
-		left: 170px;
-		bottom: 28px;
+		left: 185px;
+		top: 48px;
 
 		font-size: 21px;
 	}
 
 	.chat-welcome-bar::after {
-		left: 170px;
-		bottom: 12px;
+		left: 185px;
+		top: 77px;
 
-		max-width: 200px;
+		max-width: 190px;
 
 		font-size: 8px;
 
