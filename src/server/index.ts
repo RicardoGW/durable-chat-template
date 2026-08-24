@@ -13,13 +13,37 @@ type TypingMessage = {
 	typing: boolean;
 };
 
+/* Mensaje enviado una vez que la persona confirma su nombre. */
+type JoinMessage = {
+	type: "join";
+	user: string;
+};
+
+type ConnectionState = {
+	joined: boolean;
+	user?: string;
+};
+
 export class Chat extends Server<Env> {
 	static options = { hibernate: true };
 
 	messages = [] as ChatMessage[];
 
-	broadcastMessage(message: Message | TypingMessage, exclude?: string[]) {
-		this.broadcast(JSON.stringify(message), exclude);
+	/* Envía mensajes solo a vecinos que ya entraron al chat. */
+	broadcastToJoined(
+		message: Message | TypingMessage,
+		exclude: string[] = [],
+	) {
+		const data = JSON.stringify(message);
+
+		for (const connection of this.getConnections<ConnectionState>()) {
+			if (
+				connection.state?.joined &&
+				!exclude.includes(connection.id)
+			) {
+				connection.send(data);
+			}
+		}
 	}
 
 	onStart() {
@@ -27,18 +51,18 @@ export class Chat extends Server<Env> {
 			`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, user TEXT, role TEXT, content TEXT)`,
 		);
 
+		/*
+			Se conserva el historial en el servidor para administración,
+			pero nunca se envía automáticamente a quien recién llega.
+		*/
 		this.messages = this.ctx.storage.sql
 			.exec(`SELECT * FROM messages`)
 			.toArray() as ChatMessage[];
 	}
 
 	onConnect(connection: Connection) {
-		connection.send(
-			JSON.stringify({
-				type: "all",
-				messages: this.messages,
-			} satisfies Message),
-		);
+		/* Una conexión sin nombre todavía no puede recibir mensajes. */
+		connection.setState<ConnectionState>({ joined: false });
 	}
 
 	saveMessage(message: ChatMessage) {
@@ -69,17 +93,33 @@ export class Chat extends Server<Env> {
 	onMessage(connection: Connection, message: WSMessage) {
 		const parsed = JSON.parse(message as string) as
 			| Message
-			| TypingMessage;
+			| TypingMessage
+			| JoinMessage;
 
-		if (parsed.type === "typing") {
-			this.broadcastMessage(parsed, [connection.id]);
+		/* Registrar a la persona sin revelar ningún historial. */
+		if (parsed.type === "join") {
+			const user = parsed.user.trim().slice(0, 30);
+
+			if (user.length >= 2) {
+				connection.setState<ConnectionState>({ joined: true, user });
+			}
+
 			return;
 		}
 
-		this.broadcast(message);
+		/* Ignora cualquier mensaje de una conexión que aún no ha ingresado. */
+		if (!(connection.state as ConnectionState | null)?.joined) {
+			return;
+		}
+
+		if (parsed.type === "typing") {
+			this.broadcastToJoined(parsed, [connection.id]);
+			return;
+		}
 
 		if (parsed.type === "add" || parsed.type === "update") {
 			this.saveMessage(parsed);
+			this.broadcastToJoined(parsed);
 		}
 	}
 }
