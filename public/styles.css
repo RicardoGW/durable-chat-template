@@ -1918,3 +1918,47 @@ body {
 		font-size: 8px;
 	}
 }
+/* =========================================================
+   BURBUJAS MAS ANCHAS PARA MENSAJES LARGOS
+========================================================= */
+
+.message-bubble-wrapper {
+	width: auto;
+	max-width: min(88vw, 680px);
+}
+
+.message-bubble {
+	width: auto;
+	max-width: min(88vw, 680px);
+	min-width: 72px;
+	white-space: normal;
+	word-break: normal;
+	overflow-wrap: break-word;
+	line-height: 1.35;
+}
+
+/* En celular: aprovechar casi todo el ancho */
+@media screen and (max-width: 700px) {
+
+	.message-bubble-wrapper {
+		max-width: 88vw;
+		width: auto;
+	}
+
+	.message-bubble {
+		max-width: 88vw;
+		min-width: 72px;
+		width: auto;
+		padding: 8px 12px;
+		font-size: 14px;
+		line-height: 1.35;
+		white-space: normal;
+		word-break: normal;
+		overflow-wrap: break-word;
+	}
+
+	.my-message,
+	.other-message {
+		max-width: 91%;
+	}
+}
