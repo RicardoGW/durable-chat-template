@@ -33,11 +33,24 @@ type HistoryMessage = {
 	messages: ChatMessage[];
 };
 
+type ReactionMessage = {
+	type: "reaction";
+	messageId: string;
+	emoji: string;
+	user: string;
+};
+
 type ServerMessage =
 	| Message
 	| TypingMessage
 	| OnlineUsersMessage
-	| HistoryMessage;
+	| HistoryMessage
+	| ReactionMessage;
+
+type Reaction = {
+	emoji: string;
+	users: string[];
+};
 
 const EMOJIS = [
 	"😀",
@@ -62,8 +75,6 @@ const EMOJIS = [
 	"❤️",
 	"💚",
 	"💙",
-	"🤣",
-	"😂",
 	"🎉",
 	"🥳",
 	"🔥",
@@ -82,6 +93,15 @@ const EMOJIS = [
 	"⚠️",
 	"✅",
 	"❌",
+];
+
+const REACTION_EMOJIS = [
+	"❤️",
+	"👍",
+	"😂",
+	"😮",
+	"😢",
+	"👏",
 ];
 
 function formatTime() {
@@ -142,6 +162,12 @@ function App() {
 	const [onlineNotice, setOnlineNotice] = useState("");
 	const [showOnlineUsers, setShowOnlineUsers] = useState(false);
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+	const [reactionPicker, setReactionPicker] = useState<string | null>(
+		null,
+	);
+	const [reactions, setReactions] = useState<
+		Record<string, Reaction[]>
+	>({});
 
 	const { room } = useParams();
 
@@ -173,9 +199,7 @@ function App() {
 				evt.data as string,
 			) as ServerMessage;
 
-			/* ==========================================
-			   HISTORIAL DEL DÍA
-			========================================== */
+			/* HISTORIAL */
 
 			if (message.type === "history") {
 				setMessages(message.messages);
@@ -191,21 +215,18 @@ function App() {
 				return;
 			}
 
-			/* ==========================================
-			   USUARIOS EN LÍNEA
-			========================================== */
+			/* USUARIOS EN LÍNEA */
 
 			if (message.type === "online_users") {
 				const previousUsers = onlineUsersRef.current;
-
 				const currentUsers = message.users;
-
-				const currentIds = new Set(
-					currentUsers.map((user) => user.id),
-				);
 
 				const previousIds = new Set(
 					previousUsers.map((user) => user.id),
+				);
+
+				const currentIds = new Set(
+					currentUsers.map((user) => user.id),
 				);
 
 				const newUser = currentUsers.find(
@@ -236,10 +257,9 @@ function App() {
 						);
 					}
 
-					onlineNoticeTimeout.current =
-						setTimeout(() => {
-							setOnlineNotice("");
-						}, 3500);
+					onlineNoticeTimeout.current = setTimeout(() => {
+						setOnlineNotice("");
+					}, 3500);
 				}
 
 				if (
@@ -256,10 +276,9 @@ function App() {
 						);
 					}
 
-					onlineNoticeTimeout.current =
-						setTimeout(() => {
-							setOnlineNotice("");
-						}, 3500);
+					onlineNoticeTimeout.current = setTimeout(() => {
+						setOnlineNotice("");
+					}, 3500);
 				}
 
 				onlineUsersRef.current = currentUsers;
@@ -273,9 +292,64 @@ function App() {
 				return;
 			}
 
-			/* ==========================================
-			   ESTÁ ESCRIBIENDO
-			========================================== */
+			/* REACCIÓN RECIBIDA */
+
+			if (message.type === "reaction") {
+				setReactions((current) => {
+					const messageReactions =
+						current[message.messageId] || [];
+
+					const existingReaction =
+						messageReactions.find(
+							(reaction) =>
+								reaction.emoji ===
+								message.emoji,
+						);
+
+					if (existingReaction) {
+						if (
+							existingReaction.users.includes(
+								message.user,
+							)
+						) {
+							return current;
+						}
+
+						return {
+							...current,
+							[message.messageId]:
+								messageReactions.map(
+									(reaction) =>
+										reaction.emoji ===
+										message.emoji
+											? {
+													...reaction,
+													users: [
+														...reaction.users,
+														message.user,
+													],
+												}
+											: reaction,
+								),
+						};
+					}
+
+					return {
+						...current,
+						[message.messageId]: [
+							...messageReactions,
+							{
+								emoji: message.emoji,
+								users: [message.user],
+							},
+						],
+					};
+				});
+
+				return;
+			}
+
+			/* ESTÁ ESCRIBIENDO */
 
 			if (message.type === "typing") {
 				if (
@@ -303,9 +377,7 @@ function App() {
 				return;
 			}
 
-			/* ==========================================
-			   NUEVO MENSAJE
-			========================================== */
+			/* NUEVO MENSAJE */
 
 			if (message.type === "add") {
 				setMessages((currentMessages) => {
@@ -351,9 +423,7 @@ function App() {
 				return;
 			}
 
-			/* ==========================================
-			   ACTUALIZACIÓN
-			========================================== */
+			/* ACTUALIZACIÓN */
 
 			if (message.type === "update") {
 				setMessages((currentMessages) =>
@@ -373,20 +443,13 @@ function App() {
 				return;
 			}
 
-			/*
-				No mostramos historial enviado por
-				versiones antiguas del servidor.
-			*/
-
 			if (message.type === "all") {
 				return;
 			}
 		},
 	});
 
-	/* ==========================================
-	   LIMPIAR TEMPORIZADORES
-	========================================== */
+	/* LIMPIAR */
 
 	useEffect(() => {
 		return () => {
@@ -404,9 +467,7 @@ function App() {
 		};
 	}, []);
 
-	/* ==========================================
-	   BAJAR AL ÚLTIMO MENSAJE
-	========================================== */
+	/* SCROLL */
 
 	useEffect(() => {
 		const area = messagesAreaRef.current;
@@ -416,9 +477,7 @@ function App() {
 		}
 	}, [messages, typingUser]);
 
-	/* ==========================================
-	   ESTADO DE ESCRITURA
-	========================================== */
+	/* ESCRITURA */
 
 	const sendTyping = (isTyping: boolean) => {
 		if (!currentNameRef.current) {
@@ -434,9 +493,7 @@ function App() {
 		);
 	};
 
-	/* ==========================================
-	   INSERTAR EMOJI
-	========================================== */
+	/* INSERTAR EMOJI */
 
 	const insertEmoji = (emoji: string) => {
 		const input = messageInputRef.current;
@@ -445,8 +502,11 @@ function App() {
 			return;
 		}
 
-		const start = input.selectionStart ?? input.value.length;
-		const end = input.selectionEnd ?? input.value.length;
+		const start =
+			input.selectionStart ?? input.value.length;
+
+		const end =
+			input.selectionEnd ?? input.value.length;
 
 		const newValue =
 			input.value.slice(0, start) +
@@ -470,9 +530,85 @@ function App() {
 		sendTyping(true);
 	};
 
-	/* ==========================================
-	   PANTALLA DE INGRESO
-	========================================== */
+	/* ENVIAR REACCIÓN */
+
+	const sendReaction = (
+		messageId: string,
+		emoji: string,
+	) => {
+		const currentMessageReactions =
+			reactions[messageId] || [];
+
+		const existingReaction =
+			currentMessageReactions.find(
+				(reaction) => reaction.emoji === emoji,
+			);
+
+		const alreadyReacted =
+			existingReaction?.users.includes(
+				currentNameRef.current,
+			);
+
+		if (alreadyReacted) {
+			setReactionPicker(null);
+			return;
+		}
+
+		setReactions((current) => {
+			const existing =
+				current[messageId] || [];
+
+			const found =
+				existing.find(
+					(reaction) =>
+						reaction.emoji === emoji,
+				);
+
+			if (found) {
+				return {
+					...current,
+					[messageId]: existing.map(
+						(reaction) =>
+							reaction.emoji === emoji
+								? {
+										...reaction,
+										users: [
+											...reaction.users,
+											currentNameRef.current,
+										],
+									}
+								: reaction,
+					),
+				};
+			}
+
+			return {
+				...current,
+				[messageId]: [
+					...existing,
+					{
+						emoji,
+						users: [
+							currentNameRef.current,
+						],
+					},
+				],
+			};
+		});
+
+		socket.send(
+			JSON.stringify({
+				type: "reaction",
+				messageId,
+				emoji,
+				user: currentNameRef.current,
+			}),
+		);
+
+		setReactionPicker(null);
+	};
+
+	/* INGRESO */
 
 	if (!nameConfirmed) {
 		return (
@@ -533,16 +669,13 @@ function App() {
 								currentNameRef.current =
 									cleanName;
 
-								/*
-									Primero limpiamos el estado
-									local y después entramos.
-								*/
 								setMessages([]);
 								setMessageTimes({});
 								setOnlineUsers([]);
 								onlineUsersRef.current = [];
 								onlineInitializedRef.current =
 									false;
+								setReactions({});
 
 								setName(cleanName);
 								setNameConfirmed(true);
@@ -582,9 +715,7 @@ function App() {
 	return (
 		<div className="chat container">
 
-			{/* ======================================
-			    ENCABEZADO
-			====================================== */}
+			{/* ENCABEZADO */}
 
 			<div className="chat-welcome-bar">
 				<div className="chat-welcome-text">
@@ -662,9 +793,7 @@ function App() {
 				</div>
 			</div>
 
-			{/* ======================================
-			    AVISO DE CONEXIÓN
-			====================================== */}
+			{/* AVISO */}
 
 			{onlineNotice && (
 				<div className="online-notice">
@@ -672,9 +801,7 @@ function App() {
 				</div>
 			)}
 
-			{/* ======================================
-			    MENSAJES
-			====================================== */}
+			{/* MENSAJES */}
 
 			<div
 				className="messages-area"
@@ -684,6 +811,9 @@ function App() {
 					const isMine =
 						message.user ===
 						currentNameRef.current;
+
+					const messageReactions =
+						reactions[message.id] || [];
 
 					return (
 						<div
@@ -709,9 +839,97 @@ function App() {
 								</span>
 							</div>
 
-							<div className="message-bubble">
-								{message.content}
+							<div className="message-bubble-wrapper">
+								<div className="message-bubble">
+									{message.content}
+								</div>
+
+								<button
+									type="button"
+									className="message-reaction-button"
+									onClick={() =>
+										setReactionPicker(
+											(current) =>
+												current ===
+												message.id
+													? null
+													: message.id,
+										)
+									}
+									aria-label="Reaccionar al mensaje"
+								>
+									😊
+								</button>
+
+								{reactionPicker ===
+									message.id && (
+									<div className="reaction-picker">
+										{REACTION_EMOJIS.map(
+											(emoji) => (
+												<button
+													key={emoji}
+													type="button"
+													className="reaction-option"
+													onClick={() =>
+														sendReaction(
+															message.id,
+															emoji,
+														)
+													}
+												>
+													{emoji}
+												</button>
+											),
+										)}
+									</div>
+								)}
 							</div>
+
+							{messageReactions.length >
+								0 && (
+								<div className="message-reactions">
+									{messageReactions.map(
+										(reaction) => (
+											<button
+												key={
+													reaction.emoji
+												}
+												type="button"
+												className={`message-reaction ${
+													reaction.users.includes(
+														currentNameRef.current,
+													)
+														? "my-reaction"
+														: ""
+												}`}
+												title={reaction.users.join(
+													", ",
+												)}
+												onClick={() =>
+													sendReaction(
+														message.id,
+														reaction.emoji,
+													)
+												}
+											>
+												<span>
+													{
+														reaction.emoji
+													}
+												</span>
+
+												<span>
+													{
+														reaction
+															.users
+															.length
+													}
+												</span>
+											</button>
+										),
+									)}
+								</div>
+							)}
 
 							{isMine && (
 								<div className="message-status">
@@ -722,7 +940,7 @@ function App() {
 					);
 				})}
 
-				{/* ESTÁ ESCRIBIENDO */}
+				{/* ESCRIBIENDO */}
 
 				{typingUser && (
 					<div className="typing-indicator">
@@ -747,9 +965,7 @@ function App() {
 				)}
 			</div>
 
-			{/* ======================================
-			    CAJA DE ESCRITURA
-			====================================== */}
+			{/* ESCRITURA */}
 
 			<form
 				className="chat-form"
