@@ -1350,3 +1350,181 @@ body {
 		font-size: 15px;
 	}
 }
+/* =========================================================
+   REACCIONES TIPO WHATSAPP
+========================================================= */
+
+.message-bubble-wrapper {
+	position: relative;
+	display: inline-block;
+	max-width: 100%;
+}
+
+.message-reaction-button {
+	position: absolute;
+	right: -30px;
+	bottom: 0;
+
+	width: 28px;
+	height: 28px;
+
+	padding: 0;
+	margin: 0;
+
+	border: 0;
+	border-radius: 50%;
+
+	background: rgba(255, 255, 255, 0.95);
+
+	font-size: 15px;
+	line-height: 28px;
+
+	cursor: pointer;
+
+	opacity: 0;
+	transition:
+		opacity 0.15s ease,
+		transform 0.15s ease;
+}
+
+.message:hover .message-reaction-button {
+	opacity: 1;
+}
+
+.message-reaction-button:hover {
+	transform: scale(1.12);
+}
+
+.reaction-picker {
+	position: absolute;
+	left: 0;
+	bottom: calc(100% + 7px);
+
+	display: flex;
+	align-items: center;
+	gap: 3px;
+
+	padding: 6px 8px;
+
+	background: rgba(255, 255, 255, 0.99);
+
+	border: 1px solid rgba(76, 126, 83, 0.18);
+	border-radius: 999px;
+
+	box-shadow: 0 7px 20px rgba(40, 70, 46, 0.18);
+
+	z-index: 150;
+}
+
+.reaction-option {
+	width: 34px;
+	height: 34px;
+
+	padding: 0;
+	margin: 0;
+
+	border: 0;
+	border-radius: 50%;
+
+	background: transparent;
+
+	font-size: 21px;
+	line-height: 34px;
+
+	cursor: pointer;
+
+	transition:
+		background 0.12s ease,
+		transform 0.12s ease;
+}
+
+.reaction-option:hover {
+	background: rgba(76, 126, 83, 0.09);
+	transform: scale(1.18);
+}
+
+.message-reactions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px;
+
+	margin-top: 4px;
+}
+
+.message-reaction {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+
+	height: 25px;
+
+	padding: 2px 7px;
+
+	margin: 0;
+
+	border: 1px solid rgba(76, 126, 83, 0.15);
+	border-radius: 999px;
+
+	background: rgba(255, 255, 255, 0.95);
+
+	font-size: 13px;
+	line-height: 20px;
+
+	cursor: pointer;
+
+	box-shadow: 0 2px 5px rgba(40, 70, 46, 0.08);
+}
+
+.message-reaction:hover {
+	transform: translateY(-1px);
+}
+
+.message-reaction.my-reaction {
+	background: rgba(226, 244, 229, 0.98);
+	border-color: rgba(66, 168, 95, 0.3);
+}
+
+/* MÓVIL */
+
+@media screen and (max-width: 700px) {
+	.message-reaction-button {
+		opacity: 1;
+
+		right: -5px;
+		bottom: -10px;
+
+		width: 25px;
+		height: 25px;
+
+		font-size: 14px;
+		line-height: 25px;
+	}
+
+	.reaction-picker {
+		left: auto;
+		right: 0;
+
+		max-width: calc(100vw - 30px);
+
+		padding: 5px 6px;
+	}
+
+	.reaction-option {
+		width: 31px;
+		height: 31px;
+
+		font-size: 19px;
+		line-height: 31px;
+	}
+
+	.message-reactions {
+		margin-top: 6px;
+	}
+
+	.message-reaction {
+		height: 23px;
+		padding: 2px 6px;
+		font-size: 12px;
+	}
+}
