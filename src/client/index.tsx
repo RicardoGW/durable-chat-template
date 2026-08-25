@@ -190,6 +190,9 @@ function App() {
 
 	const onlineInitializedRef = useRef(false);
 
+	const reactionPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const longReactionPressRef = useRef(false);
+
 	const socket = usePartySocket({
 		party: "chat",
 		room,
@@ -464,6 +467,10 @@ function App() {
 			if (audioContextRef.current) {
 				void audioContextRef.current.close();
 			}
+
+			if (reactionPressTimer.current) {
+				clearTimeout(reactionPressTimer.current);
+			}
 		};
 	}, []);
 
@@ -528,6 +535,27 @@ function App() {
 		setShowEmojiPicker(false);
 
 		sendTyping(true);
+	};
+
+	/* ABRIR REACCIONES AL TOCAR / MANTENER PRESIONADO */
+	const startReactionPress = (messageId: string) => {
+		longReactionPressRef.current = false;
+
+		if (reactionPressTimer.current) {
+			clearTimeout(reactionPressTimer.current);
+		}
+
+		reactionPressTimer.current = setTimeout(() => {
+			longReactionPressRef.current = true;
+			setReactionPicker(messageId);
+		}, 450);
+	};
+
+	const endReactionPress = () => {
+		if (reactionPressTimer.current) {
+			clearTimeout(reactionPressTimer.current);
+			reactionPressTimer.current = null;
+		}
 	};
 
 	/* ENVIAR REACCIÓN */
@@ -839,36 +867,41 @@ function App() {
 								</span>
 							</div>
 
-							<div className="message-bubble-wrapper">
+							<div
+								className="message-bubble-wrapper"
+								onContextMenu={(e) => {
+									e.preventDefault();
+									setReactionPicker(message.id);
+								}}
+							>
 								<div
 									className="message-bubble"
 									role="button"
 									tabIndex={0}
-									aria-label="Reaccionar al mensaje"
-									onClick={() =>
-										setReactionPicker(
-											(current) =>
-												current === message.id
-													? null
-													: message.id,
-										)
+									aria-label="Mantén presionado para reaccionar"
+									onPointerDown={() => startReactionPress(message.id)}
+									onPointerUp={endReactionPress}
+									onPointerCancel={endReactionPress}
+									onPointerLeave={endReactionPress}
+									onClick={() => {
+									if (longReactionPressRef.current) {
+										longReactionPressRef.current = false;
+										return;
 									}
-									onKeyDown={(e) => {
-										if (
-											e.key === "Enter" ||
-											e.key === " "
-										) {
-											e.preventDefault();
 
-											setReactionPicker(
-												(current) =>
-													current === message.id
-														? null
-														: message.id,
-											);
-										}
-									}}
-								>
+									setReactionPicker((current) =>
+										current === message.id ? null : message.id,
+									);
+								}}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										e.preventDefault();
+										setReactionPicker((current) =>
+											current === message.id ? null : message.id,
+										);
+									}
+								}}
+							>
 									{message.content}
 								</div>
 
@@ -881,11 +914,7 @@ function App() {
 												className="reaction-option"
 												onClick={(e) => {
 													e.stopPropagation();
-
-													sendReaction(
-														message.id,
-														emoji,
-													);
+												sendReaction(message.id, emoji);
 												}}
 											>
 												{emoji}
