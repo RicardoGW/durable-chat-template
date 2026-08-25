@@ -19,6 +19,15 @@ type JoinMessage = {
 	user: string;
 };
 
+/* Mensaje para informar quiénes están conectados. */
+type OnlineUsersMessage = {
+	type: "online_users";
+	users: {
+		id: string;
+		user: string;
+	}[];
+};
+
 type ConnectionState = {
 	joined: boolean;
 	user?: string;
@@ -46,6 +55,29 @@ export class Chat extends Server<Env> {
 		}
 	}
 
+	/* Envía a todos la lista actual de vecinos conectados. */
+	broadcastOnlineUsers() {
+		const users = this.getConnections<ConnectionState>()
+			.filter((connection) => connection.state?.joined)
+			.map((connection) => ({
+				id: connection.id,
+				user: connection.state?.user || "Vecino",
+			}));
+
+		const message: OnlineUsersMessage = {
+			type: "online_users",
+			users,
+		};
+
+		const data = JSON.stringify(message);
+
+		for (const connection of this.getConnections<ConnectionState>()) {
+			if (connection.state?.joined) {
+				connection.send(data);
+			}
+		}
+	}
+
 	onStart() {
 		this.ctx.storage.sql.exec(
 			`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, user TEXT, role TEXT, content TEXT)`,
@@ -63,6 +95,16 @@ export class Chat extends Server<Env> {
 	onConnect(connection: Connection) {
 		/* Una conexión sin nombre todavía no puede recibir mensajes. */
 		connection.setState<ConnectionState>({ joined: false });
+	}
+
+	onClose(connection: Connection) {
+		/*
+			Cuando un vecino se desconecta,
+			actualizamos inmediatamente la lista.
+		*/
+		if (connection.state?.joined) {
+			this.broadcastOnlineUsers();
+		}
 	}
 
 	saveMessage(message: ChatMessage) {
@@ -101,7 +143,13 @@ export class Chat extends Server<Env> {
 			const user = parsed.user.trim().slice(0, 30);
 
 			if (user.length >= 2) {
-				connection.setState<ConnectionState>({ joined: true, user });
+				connection.setState<ConnectionState>({
+					joined: true,
+					user,
+				});
+
+				/* Avisar a todos los vecinos conectados. */
+				this.broadcastOnlineUsers();
 			}
 
 			return;
