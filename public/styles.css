@@ -1598,359 +1598,73 @@ body {
 	}
 }
 
-
 /* =========================================================
-   CORRECCION FINAL DEL CHAT - VERSION COMPACTA Y AMISTOSA
-   Las reglas siguientes prevalecen sobre las anteriores.
+   REACCIONES: ESTILO FINAL TIPO WHATSAPP
 ========================================================= */
 
-/* Mensajes compactos y con continuidad */
-.messages-area {
-	padding: 8px 12px 8px;
-}
-
-.message {
-	margin-bottom: 5px;
-}
-
-.message-meta {
-	margin-bottom: 2px;
-	padding: 0 5px;
+/* El antiguo mono/boton lateral desaparece por completo */
+.message-reaction-button {
+	display: none !important;
+	visibility: hidden !important;
 }
 
 .message-bubble-wrapper {
 	position: relative;
-	display: inline-block;
-	width: fit-content;
-	max-width: min(82vw, 560px);
-}
-
-.message-bubble {
-	display: block;
-	width: fit-content;
-	min-width: 42px;
-	max-width: min(82vw, 560px);
-	padding: 7px 11px;
-	font-size: 14px;
-	line-height: 1.3;
-	font-weight: 600;
-	white-space: normal;
-	word-break: normal;
-	overflow-wrap: anywhere;
-}
-
-/* Ya no mostramos el boton 😊 permanente.
-   La reaccion se abre al tocar/clicar la burbuja. */
-.message-reaction-button {
-	display: none !important;
-}
-
-/* Selector de reacciones: compacto y cercano a la burbuja */
-.reaction-picker {
-	position: absolute;
-	left: 0;
-	bottom: calc(100% + 5px);
-	display: flex;
-	align-items: center;
-	gap: 2px;
-	padding: 5px 7px;
-	background: rgba(255, 255, 255, 0.98);
-	border: 1px solid rgba(76, 126, 83, 0.18);
-	border-radius: 999px;
-	box-shadow: 0 6px 18px rgba(40, 70, 46, 0.16);
-	z-index: 150;
-}
-
-.reaction-option {
-	width: 31px;
-	height: 31px;
-	padding: 0;
-	margin: 0;
-	border: 0;
-	border-radius: 50%;
-	background: transparent;
-	font-size: 19px;
-	line-height: 31px;
-	cursor: pointer;
-	transition: background 0.12s ease, transform 0.12s ease;
-}
-
-.reaction-option:hover {
-	background: rgba(76, 126, 83, 0.09);
-	transform: scale(1.12);
-}
-
-/* Las reacciones reales aparecen solo si existen */
-.message-reactions {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 3px;
-	margin-top: 2px;
-	margin-bottom: 0;
-}
-
-.message-reaction {
-	display: inline-flex;
-	align-items: center;
-	gap: 2px;
-	height: 22px;
-	padding: 1px 6px;
-	margin: 0;
-	border: 1px solid rgba(76, 126, 83, 0.15);
-	border-radius: 999px;
-	background: rgba(255, 255, 255, 0.96);
-	font-size: 12px;
-	line-height: 19px;
-	cursor: pointer;
-	box-shadow: 0 1px 4px rgba(40, 70, 46, 0.07);
-}
-
-.message-reaction.my-reaction {
-	background: rgba(226, 244, 229, 0.98);
-	border-color: rgba(66, 168, 95, 0.3);
-}
-
-/* Doble check muy cercano al mensaje */
-.message-status {
-	margin-top: 1px;
-	padding-right: 5px;
-	font-size: 9px;
-}
-
-/* Aviso de conexión más compacto */
-.online-notice {
-	margin: 3px auto 5px;
-	padding: 5px 11px;
-	font-size: 11px;
-}
-
-/* Caja de escritura más compacta */
-.chat-form {
-	gap: 5px;
-	margin-top: 2px;
-	padding: 5px;
-}
-
-.chat-input-wrapper {
-	min-width: 0;
-}
-
-.emoji-button {
-	width: 36px;
-	height: 36px;
-	margin: 0 1px 0 2px;
-	font-size: 20px;
-}
-
-.my-input-text {
-	height: 38px !important;
-	padding: 0 10px !important;
-	font-size: 13px;
-}
-
-.send-message {
-	flex-basis: 72px;
-	width: 72px !important;
-	height: 38px !important;
-}
-
-/* =========================================================
-   MOVIL
-========================================================= */
-
-@media screen and (max-width: 700px) {
-
-	.chat {
-		padding: 5px;
-	}
-
-	.chat-welcome-bar {
-		height: 116px;
-		min-height: 116px;
-		margin-bottom: 5px;
-	}
-
-	/* Logo un poco más contenido para dejar espacio al contador */
-	.chat-welcome-text {
-		left: 6px;
-		width: 150px;
-		height: 92px;
-	}
-
-	.chat-welcome-bar::before {
-		left: 165px;
-		top: 43px;
-		font-size: 19px;
-	}
-
-	.chat-welcome-bar::after {
-		left: 165px;
-		top: 72px;
-		max-width: 145px;
-		font-size: 7px;
-	}
-
-	.chat-live {
-		right: 6px;
-		top: 7px;
-	}
-
-	.online-users-button {
-		padding: 4px 5px;
-		font-size: 10px;
-		gap: 4px;
-		background: rgba(255,255,255,.90);
-		border-radius: 999px;
-	}
-
-	.online-users-list {
-		right: -2px;
-		top: calc(100% + 6px);
-		width: 185px;
-	}
-
-	.messages-area {
-		padding: 6px 5px 6px;
-		border-radius: 11px;
-	}
-
-	/* Reducimos el mensaje de bienvenida visual para no consumir espacio */
-	.messages-area::before {
-		margin: 0 auto 7px;
-		padding: 5px 9px;
-		font-size: 9px;
-		line-height: 1.35;
-	}
-
-	.message {
-		margin-bottom: 4px;
-	}
-
-	.message-meta {
-		margin-bottom: 1px;
-		padding: 0 4px;
-	}
-
-	.message-user {
-		font-size: 10px;
-	}
-
-	.message-time {
-		font-size: 8px;
-	}
-
-	.message-bubble-wrapper {
-		max-width: 84vw;
-	}
-
-	.message-bubble {
-		min-width: 42px;
-		max-width: 84vw;
-		padding: 6px 10px;
-		font-size: 14px;
-		line-height: 1.3;
-	}
-
-	.message-status {
-		margin-top: 1px;
-		font-size: 8px;
-	}
-
-	/* Selector de reacciones */
-	.reaction-picker {
-		left: auto;
-		right: 0;
-		max-width: calc(100vw - 24px);
-		padding: 4px 5px;
-	}
-
-	.reaction-option {
-		width: 29px;
-		height: 29px;
-		font-size: 18px;
-		line-height: 29px;
-	}
-
-	.message-reaction {
-		height: 21px;
-		padding: 1px 5px;
-		font-size: 11px;
-	}
-
-	.message-reactions {
-		margin-top: 1px;
-		gap: 2px;
-	}
-
-	.typing-indicator {
-		margin: 1px 0 5px 2px;
-		padding: 5px 8px;
-	}
-
-	.chat-form {
-		padding: 4px;
-		gap: 4px;
-		border-radius: 10px;
-	}
-
-	.emoji-button {
-		width: 34px;
-		height: 36px;
-		font-size: 19px;
-	}
-
-	.my-input-text {
-		height: 38px !important;
-		font-size: 13px;
-		padding: 0 9px !important;
-	}
-
-	.send-message {
-		flex-basis: 65px;
-		width: 65px !important;
-		height: 38px !important;
-		font-size: 11px;
-	}
-
-	.chat-security {
-		padding: 3px 2px 0;
-		font-size: 8px;
-	}
-}
-/* =========================================================
-   BURBUJAS MAS ANCHAS PARA MENSAJES LARGOS
-========================================================= */
-
-.message-bubble-wrapper {
 	width: auto;
 	max-width: min(88vw, 680px);
 }
 
 .message-bubble {
+	cursor: pointer;
+	-webkit-user-select: none;
+	user-select: none;
 	width: auto;
 	max-width: min(88vw, 680px);
 	min-width: 72px;
 	white-space: normal;
 	word-break: normal;
 	overflow-wrap: break-word;
-	line-height: 1.35;
 }
 
-/* En celular: aprovechar casi todo el ancho */
-@media screen and (max-width: 700px) {
+.reaction-picker {
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 7px);
+	transform: translateX(-50%);
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	padding: 5px 7px;
+	background: rgba(255,255,255,.99);
+	border: 1px solid rgba(76,126,83,.18);
+	border-radius: 999px;
+	box-shadow: 0 7px 22px rgba(40,70,46,.20);
+	z-index: 300;
+	white-space: nowrap;
+}
 
-	.message-bubble-wrapper {
+.reaction-option {
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	margin: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	font-size: 21px;
+	line-height: 34px;
+	cursor: pointer;
+}
+
+@media screen and (max-width: 700px) {
+	.message-bubble-wrapper,
+	.message-bubble {
 		max-width: 88vw;
-		width: auto;
 	}
 
 	.message-bubble {
-		max-width: 88vw;
 		min-width: 72px;
-		width: auto;
 		padding: 8px 12px;
-		font-size: 14px;
 		line-height: 1.35;
 		white-space: normal;
 		word-break: normal;
@@ -1960,5 +1674,17 @@ body {
 	.my-message,
 	.other-message {
 		max-width: 91%;
+	}
+
+	.reaction-picker {
+		max-width: calc(100vw - 24px);
+		padding: 5px 6px;
+	}
+
+	.reaction-option {
+		width: 32px;
+		height: 32px;
+		font-size: 20px;
+		line-height: 32px;
 	}
 }
