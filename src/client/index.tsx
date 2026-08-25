@@ -28,6 +28,62 @@ type OnlineUsersMessage = {
 	users: OnlineUser[];
 };
 
+type HistoryMessage = {
+	type: "history";
+	messages: ChatMessage[];
+};
+
+type ServerMessage =
+	| Message
+	| TypingMessage
+	| OnlineUsersMessage
+	| HistoryMessage;
+
+const EMOJIS = [
+	"😀",
+	"😂",
+	"🤣",
+	"😊",
+	"😍",
+	"🥰",
+	"😘",
+	"😉",
+	"😎",
+	"🤗",
+	"🤔",
+	"😮",
+	"😢",
+	"😭",
+	"😡",
+	"👍",
+	"👎",
+	"👏",
+	"🙏",
+	"❤️",
+	"💚",
+	"💙",
+	"🤣",
+	"😂",
+	"🎉",
+	"🥳",
+	"🔥",
+	"⭐",
+	"🌿",
+	"🏡",
+	"☀️",
+	"🌧️",
+	"🌈",
+	"☕",
+	"🍀",
+	"🐶",
+	"🐱",
+	"🚗",
+	"📢",
+	"⚠️",
+	"✅",
+	"❌",
+];
+
 function formatTime() {
 	return new Date().toLocaleTimeString("es-CL", {
 		hour: "2-digit",
@@ -36,8 +92,42 @@ function formatTime() {
 	});
 }
 
-function getInitial(name: string) {
-	return name.trim().charAt(0).toUpperCase();
+function playNotificationSound(
+	audioContext: AudioContext | null,
+) {
+	if (!audioContext) {
+		return;
+	}
+
+	if (audioContext.state === "suspended") {
+		void audioContext.resume();
+	}
+
+	const now = audioContext.currentTime;
+
+	const oscillator = audioContext.createOscillator();
+	const gain = audioContext.createGain();
+
+	oscillator.type = "sine";
+
+	oscillator.frequency.setValueAtTime(880, now);
+	oscillator.frequency.setValueAtTime(1174, now + 0.09);
+
+	gain.gain.setValueAtTime(0.0001, now);
+	gain.gain.exponentialRampToValueAtTime(
+		0.08,
+		now + 0.02,
+	);
+	gain.gain.exponentialRampToValueAtTime(
+		0.0001,
+		now + 0.28,
+	);
+
+	oscillator.connect(gain);
+	gain.connect(audioContext.destination);
+
+	oscillator.start(now);
+	oscillator.stop(now + 0.3);
 }
 
 function App() {
@@ -50,10 +140,13 @@ function App() {
 	>({});
 	const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
 	const [onlineNotice, setOnlineNotice] = useState("");
+	const [showOnlineUsers, setShowOnlineUsers] = useState(false);
+	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
 	const { room } = useParams();
 
 	const messagesAreaRef = useRef<HTMLDivElement>(null);
+	const messageInputRef = useRef<HTMLInputElement>(null);
 
 	const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(
 		null,
@@ -65,135 +158,130 @@ function App() {
 
 	const audioContextRef = useRef<AudioContext | null>(null);
 
+	const currentNameRef = useRef("");
+
+	const onlineUsersRef = useRef<OnlineUser[]>([]);
+
+	const onlineInitializedRef = useRef(false);
+
 	const socket = usePartySocket({
 		party: "chat",
 		room,
 
 		onMessage: (evt) => {
-			const message = JSON.parse(evt.data as string) as
-				| Message
-				| TypingMessage
-				| OnlineUsersMessage;
+			const message = JSON.parse(
+				evt.data as string,
+			) as ServerMessage;
 
-			/* USUARIOS EN LÍNEA */
+			/* ==========================================
+			   HISTORIAL DEL DÍA
+			========================================== */
 
-			if (message.type === "online_users") {
-				setOnlineUsers((previousUsers) => {
-					const previousIds = new Set(
-						previousUsers.map((user) => user.id),
-					);
+			if (message.type === "history") {
+				setMessages(message.messages);
 
-					const currentIds = new Set(
-						message.users.map((user) => user.id),
-					);
+				const times: Record<string, string> = {};
 
-					const newUser = message.users.find(
-						(user) =>
-							!previousIds.has(user.id) &&
-							user.user !== name,
-					);
+				for (const chatMessage of message.messages) {
+					times[chatMessage.id] = formatTime();
+				}
 
-					const disconnectedUser = previousUsers.find(
-						(user) => !currentIds.has(user.id),
-					);
-
-					if (newUser && nameConfirmed) {
-						setOnlineNotice(
-							`🟢 ${newUser.user} se ha conectado`,
-						);
-
-						if (onlineNoticeTimeout.current) {
-							clearTimeout(
-								onlineNoticeTimeout.current,
-							);
-						}
-
-						onlineNoticeTimeout.current = setTimeout(() => {
-							setOnlineNotice("");
-						}, 3500);
-
-						/* SONIDO DE NOTIFICACIÓN */
-
-						if (audioContextRef.current) {
-							const audioContext =
-								audioContextRef.current;
-
-							if (audioContext.state === "suspended") {
-								audioContext.resume();
-							}
-
-							const oscillator =
-								audioContext.createOscillator();
-
-							const gain =
-								audioContext.createGain();
-
-							oscillator.type = "sine";
-
-							oscillator.frequency.setValueAtTime(
-								880,
-								audioContext.currentTime,
-							);
-
-							oscillator.frequency.setValueAtTime(
-								1174,
-								audioContext.currentTime + 0.08,
-							);
-
-							gain.gain.setValueAtTime(
-								0.0001,
-								audioContext.currentTime,
-							);
-
-							gain.gain.exponentialRampToValueAtTime(
-								0.08,
-								audioContext.currentTime + 0.02,
-							);
-
-							gain.gain.exponentialRampToValueAtTime(
-								0.0001,
-								audioContext.currentTime + 0.22,
-							);
-
-							oscillator.connect(gain);
-							gain.connect(
-								audioContext.destination,
-							);
-
-							oscillator.start();
-
-							oscillator.stop(
-								audioContext.currentTime + 0.25,
-							);
-						}
-					}
-
-					if (disconnectedUser && nameConfirmed) {
-						setOnlineNotice(
-							`⚪ ${disconnectedUser.user} se ha desconectado`,
-						);
-
-						if (onlineNoticeTimeout.current) {
-							clearTimeout(
-								onlineNoticeTimeout.current,
-							);
-						}
-
-						onlineNoticeTimeout.current = setTimeout(() => {
-							setOnlineNotice("");
-						}, 3500);
-					}
-
-					return message.users;
-				});
+				setMessageTimes(times);
 
 				return;
 			}
 
-			/* INDICADOR "ESTÁ ESCRIBIENDO" */
+			/* ==========================================
+			   USUARIOS EN LÍNEA
+			========================================== */
+
+			if (message.type === "online_users") {
+				const previousUsers = onlineUsersRef.current;
+
+				const currentUsers = message.users;
+
+				const currentIds = new Set(
+					currentUsers.map((user) => user.id),
+				);
+
+				const previousIds = new Set(
+					previousUsers.map((user) => user.id),
+				);
+
+				const newUser = currentUsers.find(
+					(user) =>
+						!previousIds.has(user.id) &&
+						user.user !== currentNameRef.current,
+				);
+
+				const disconnectedUser = previousUsers.find(
+					(user) => !currentIds.has(user.id),
+				);
+
+				if (
+					onlineInitializedRef.current &&
+					newUser
+				) {
+					setOnlineNotice(
+						`🟢 ${newUser.user} se ha conectado`,
+					);
+
+					playNotificationSound(
+						audioContextRef.current,
+					);
+
+					if (onlineNoticeTimeout.current) {
+						clearTimeout(
+							onlineNoticeTimeout.current,
+						);
+					}
+
+					onlineNoticeTimeout.current =
+						setTimeout(() => {
+							setOnlineNotice("");
+						}, 3500);
+				}
+
+				if (
+					onlineInitializedRef.current &&
+					disconnectedUser
+				) {
+					setOnlineNotice(
+						`⚪ ${disconnectedUser.user} se ha desconectado`,
+					);
+
+					if (onlineNoticeTimeout.current) {
+						clearTimeout(
+							onlineNoticeTimeout.current,
+						);
+					}
+
+					onlineNoticeTimeout.current =
+						setTimeout(() => {
+							setOnlineNotice("");
+						}, 3500);
+				}
+
+				onlineUsersRef.current = currentUsers;
+
+				if (!onlineInitializedRef.current) {
+					onlineInitializedRef.current = true;
+				}
+
+				setOnlineUsers(currentUsers);
+
+				return;
+			}
+
+			/* ==========================================
+			   ESTÁ ESCRIBIENDO
+			========================================== */
 
 			if (message.type === "typing") {
-				if (message.user !== name && message.typing) {
+				if (
+					message.user !== currentNameRef.current &&
+					message.typing
+				) {
 					setTypingUser(message.user);
 
 					if (typingTimeout.current) {
@@ -205,20 +293,26 @@ function App() {
 					}, 2500);
 				}
 
-				if (message.user !== name && !message.typing) {
+				if (
+					message.user !== currentNameRef.current &&
+					!message.typing
+				) {
 					setTypingUser("");
 				}
 
 				return;
 			}
 
-			/* NUEVO MENSAJE */
+			/* ==========================================
+			   NUEVO MENSAJE
+			========================================== */
 
 			if (message.type === "add") {
 				setMessages((currentMessages) => {
-					const foundIndex = currentMessages.findIndex(
-						(m) => m.id === message.id,
-					);
+					const foundIndex =
+						currentMessages.findIndex(
+							(m) => m.id === message.id,
+						);
 
 					if (foundIndex === -1) {
 						return [
@@ -240,7 +334,11 @@ function App() {
 							user: message.user,
 							role: message.role,
 						})
-						.concat(currentMessages.slice(foundIndex + 1));
+						.concat(
+							currentMessages.slice(
+								foundIndex + 1,
+							),
+						);
 				});
 
 				setMessageTimes((times) => ({
@@ -253,7 +351,9 @@ function App() {
 				return;
 			}
 
-			/* ACTUALIZACIÓN */
+			/* ==========================================
+			   ACTUALIZACIÓN
+			========================================== */
 
 			if (message.type === "update") {
 				setMessages((currentMessages) =>
@@ -261,7 +361,8 @@ function App() {
 						m.id === message.id
 							? {
 									id: message.id,
-									content: message.content,
+									content:
+										message.content,
 									user: message.user,
 									role: message.role,
 								}
@@ -272,7 +373,10 @@ function App() {
 				return;
 			}
 
-			/* Nunca mostrar historial recibido por una versión antigua del servidor. */
+			/*
+				No mostramos historial enviado por
+				versiones antiguas del servidor.
+			*/
 
 			if (message.type === "all") {
 				return;
@@ -280,7 +384,9 @@ function App() {
 		},
 	});
 
-	/* LIMPIAR TEMPORIZADORES */
+	/* ==========================================
+	   LIMPIAR TEMPORIZADORES
+	========================================== */
 
 	useEffect(() => {
 		return () => {
@@ -291,10 +397,16 @@ function App() {
 			if (onlineNoticeTimeout.current) {
 				clearTimeout(onlineNoticeTimeout.current);
 			}
+
+			if (audioContextRef.current) {
+				void audioContextRef.current.close();
+			}
 		};
 	}, []);
 
-	/* BAJAR AUTOMÁTICAMENTE AL ÚLTIMO MENSAJE */
+	/* ==========================================
+	   BAJAR AL ÚLTIMO MENSAJE
+	========================================== */
 
 	useEffect(() => {
 		const area = messagesAreaRef.current;
@@ -304,29 +416,71 @@ function App() {
 		}
 	}, [messages, typingUser]);
 
-	/* ENVIAR ESTADO DE ESCRITURA */
+	/* ==========================================
+	   ESTADO DE ESCRITURA
+	========================================== */
 
 	const sendTyping = (isTyping: boolean) => {
-		if (!name) {
+		if (!currentNameRef.current) {
 			return;
 		}
 
 		socket.send(
 			JSON.stringify({
 				type: "typing",
-				user: name,
+				user: currentNameRef.current,
 				typing: isTyping,
 			}),
 		);
 	};
 
-	/* PANTALLA DE INGRESO */
+	/* ==========================================
+	   INSERTAR EMOJI
+	========================================== */
+
+	const insertEmoji = (emoji: string) => {
+		const input = messageInputRef.current;
+
+		if (!input) {
+			return;
+		}
+
+		const start = input.selectionStart ?? input.value.length;
+		const end = input.selectionEnd ?? input.value.length;
+
+		const newValue =
+			input.value.slice(0, start) +
+			emoji +
+			input.value.slice(end);
+
+		input.value = newValue;
+
+		const newCursorPosition =
+			start + emoji.length;
+
+		input.focus();
+
+		input.setSelectionRange(
+			newCursorPosition,
+			newCursorPosition,
+		);
+
+		setShowEmojiPicker(false);
+
+		sendTyping(true);
+	};
+
+	/* ==========================================
+	   PANTALLA DE INGRESO
+	========================================== */
 
 	if (!nameConfirmed) {
 		return (
 			<div className="name-screen">
 				<div className="name-box">
-					<div className="name-icon">🌿</div>
+					<div className="name-icon">
+						🌿
+					</div>
 
 					<div className="name-welcome">
 						Villa Los Agapantos
@@ -335,38 +489,63 @@ function App() {
 					<h2>Bienvenido al chat</h2>
 
 					<p>
-						Para participar en el chat de Villa Los Agapantos,
-						indica el nombre con el que quieres aparecer.
+						Para participar en el chat de
+						Villa Los Agapantos, indica el
+						nombre con el que quieres
+						aparecer.
 					</p>
 
 					<form
 						onSubmit={(e) => {
 							e.preventDefault();
 
-							const cleanName = name.trim();
+							const cleanName =
+								name.trim();
 
-							if (cleanName.length >= 2) {
-								/* Activar sonido después de la interacción del usuario. */
-
+							if (
+								cleanName.length >= 2
+							) {
 								const AudioContextClass =
 									window.AudioContext ||
-									(window as typeof window & {
-										webkitAudioContext?: typeof AudioContext;
-									}).webkitAudioContext;
+									(
+										window as typeof window & {
+											webkitAudioContext?: typeof AudioContext;
+										}
+									)
+										.webkitAudioContext;
 
-								if (AudioContextClass) {
+								if (
+									AudioContextClass
+								) {
 									audioContextRef.current =
 										new AudioContextClass();
 
 									if (
-										audioContextRef.current
-											.state === "suspended"
+										audioContextRef
+											.current
+											.state ===
+										"suspended"
 									) {
-										audioContextRef.current.resume();
+										void audioContextRef.current.resume();
 									}
 								}
 
-								/* Registra esta conexión sin solicitar historial. */
+								currentNameRef.current =
+									cleanName;
+
+								/*
+									Primero limpiamos el estado
+									local y después entramos.
+								*/
+								setMessages([]);
+								setMessageTimes({});
+								setOnlineUsers([]);
+								onlineUsersRef.current = [];
+								onlineInitializedRef.current =
+									false;
+
+								setName(cleanName);
+								setNameConfirmed(true);
 
 								socket.send(
 									JSON.stringify({
@@ -374,18 +553,17 @@ function App() {
 										user: cleanName,
 									}),
 								);
-
-								setMessages([]);
-								setMessageTimes({});
-								setName(cleanName);
-								setNameConfirmed(true);
 							}
 						}}
 					>
 						<input
 							type="text"
 							value={name}
-							onChange={(e) => setName(e.target.value)}
+							onChange={(e) =>
+								setName(
+									e.target.value,
+								)
+							}
 							placeholder="Escribe tu nombre"
 							autoComplete="name"
 							autoFocus
@@ -404,21 +582,34 @@ function App() {
 	return (
 		<div className="chat container">
 
-			{/* ENCABEZADO */}
+			{/* ======================================
+			    ENCABEZADO
+			====================================== */}
 
 			<div className="chat-welcome-bar">
 				<div className="chat-welcome-text">
-					<strong>💬 Conversación de vecinos</strong>
+					<strong>
+						💬 Conversación de vecinos
+					</strong>
 
 					<span>
-						Comparte información y mantente conectado.
+						Comparte información y
+						mantente conectado.
 					</span>
 				</div>
 
 				<div className="chat-live">
-					<span className="online-dot"></span>
+					<button
+						type="button"
+						className="online-users-button"
+						onClick={() =>
+							setShowOnlineUsers(
+								(current) => !current,
+							)
+						}
+					>
+						<span className="online-dot"></span>
 
-					<div className="online-users">
 						<strong>
 							{onlineUsers.length}{" "}
 							{onlineUsers.length === 1
@@ -427,27 +618,53 @@ function App() {
 							en línea
 						</strong>
 
-						{onlineUsers.length > 0 && (
-							<div className="online-users-list">
-								{onlineUsers.map((onlineUser) => (
+						<span className="online-arrow">
+							{showOnlineUsers
+								? "▲"
+								: "▼"}
+						</span>
+					</button>
+
+					{showOnlineUsers && (
+						<div className="online-users-list">
+							<div className="online-users-title">
+								👥 Vecinos conectados
+							</div>
+
+							{onlineUsers.length ===
+								0 && (
+								<div className="online-user-empty">
+									No hay vecinos
+									conectados.
+								</div>
+							)}
+
+							{onlineUsers.map(
+								(onlineUser) => (
 									<div
-										key={onlineUser.id}
+										key={
+											onlineUser.id
+										}
 										className="online-user"
 									>
 										<span className="online-user-dot"></span>
 
 										<span>
-											{onlineUser.user}
+											{
+												onlineUser.user
+											}
 										</span>
 									</div>
-								))}
-							</div>
-						)}
-					</div>
+								),
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 
-			{/* AVISO DE CONEXIÓN */}
+			{/* ======================================
+			    AVISO DE CONEXIÓN
+			====================================== */}
 
 			{onlineNotice && (
 				<div className="online-notice">
@@ -455,14 +672,18 @@ function App() {
 				</div>
 			)}
 
-			{/* MENSAJES */}
+			{/* ======================================
+			    MENSAJES
+			====================================== */}
 
 			<div
 				className="messages-area"
 				ref={messagesAreaRef}
 			>
 				{messages.map((message) => {
-					const isMine = message.user === name;
+					const isMine =
+						message.user ===
+						currentNameRef.current;
 
 					return (
 						<div
@@ -481,7 +702,9 @@ function App() {
 								</span>
 
 								<span className="message-time">
-									{messageTimes[message.id] ||
+									{messageTimes[
+										message.id
+									] ||
 										formatTime()}
 								</span>
 							</div>
@@ -503,13 +726,17 @@ function App() {
 
 				{typingUser && (
 					<div className="typing-indicator">
-						<span className="typing-icon">✍️</span>
+						<span className="typing-icon">
+							✍️
+						</span>
 
 						<span className="typing-name">
 							{typingUser}
 						</span>
 
-						<span>está escribiendo</span>
+						<span>
+							está escribiendo
+						</span>
 
 						<span className="typing-dots">
 							<span>•</span>
@@ -520,7 +747,9 @@ function App() {
 				)}
 			</div>
 
-			{/* CAJA DE ESCRITURA */}
+			{/* ======================================
+			    CAJA DE ESCRITURA
+			====================================== */}
 
 			<form
 				className="chat-form"
@@ -528,11 +757,14 @@ function App() {
 					e.preventDefault();
 
 					const content =
-						e.currentTarget.elements.namedItem(
-							"content",
-						) as HTMLInputElement;
+						messageInputRef.current;
 
-					const text = content.value.trim();
+					if (!content) {
+						return;
+					}
+
+					const text =
+						content.value.trim();
 
 					if (!text) {
 						return;
@@ -541,18 +773,22 @@ function App() {
 					const chatMessage: ChatMessage = {
 						id: nanoid(8),
 						content: text,
-						user: name,
+						user:
+							currentNameRef.current,
 						role: "user",
 					};
 
-					setMessages((currentMessages) => [
-						...currentMessages,
-						chatMessage,
-					]);
+					setMessages(
+						(currentMessages) => [
+							...currentMessages,
+							chatMessage,
+						],
+					);
 
 					setMessageTimes((times) => ({
 						...times,
-						[chatMessage.id]: formatTime(),
+						[chatMessage.id]:
+							formatTime(),
 					}));
 
 					socket.send(
@@ -565,16 +801,63 @@ function App() {
 					sendTyping(false);
 
 					content.value = "";
+
+					setShowEmojiPicker(false);
 				}}
 			>
-				<input
-					type="text"
-					name="content"
-					className="my-input-text"
-					placeholder={`Hola ${name}, escribe un mensaje...`}
-					autoComplete="off"
-					onInput={() => sendTyping(true)}
-				/>
+				<div className="chat-input-wrapper">
+					<button
+						type="button"
+						className="emoji-button"
+						aria-label="Elegir emoji"
+						onClick={() =>
+							setShowEmojiPicker(
+								(current) => !current,
+							)
+						}
+					>
+						😀
+					</button>
+
+					<input
+						ref={messageInputRef}
+						type="text"
+						name="content"
+						className="my-input-text"
+						placeholder={`Hola ${currentNameRef.current}, escribe un mensaje...`}
+						autoComplete="off"
+						onInput={() =>
+							sendTyping(true)
+						}
+					/>
+
+					{showEmojiPicker && (
+						<div className="emoji-picker">
+							<div className="emoji-picker-title">
+								Emojis
+							</div>
+
+							<div className="emoji-grid">
+								{EMOJIS.map(
+									(emoji, index) => (
+										<button
+											key={`${emoji}-${index}`}
+											type="button"
+											className="emoji-item"
+											onClick={() =>
+												insertEmoji(
+													emoji,
+												)
+											}
+										>
+											{emoji}
+										</button>
+									),
+								)}
+							</div>
+						</div>
+					)}
+				</div>
 
 				<button
 					type="submit"
@@ -591,12 +874,16 @@ function App() {
 	);
 }
 
-createRoot(document.getElementById("root")!).render(
+createRoot(
+	document.getElementById("root")!,
+).render(
 	<BrowserRouter>
 		<Routes>
 			<Route
 				path="/"
-				element={<Navigate to={`/${nanoid()}`} />}
+				element={
+					<Navigate to="/villa-los-agapantos" />
+				}
 			/>
 
 			<Route
@@ -606,7 +893,9 @@ createRoot(document.getElementById("root")!).render(
 
 			<Route
 				path="*"
-				element={<Navigate to="/" />}
+				element={
+					<Navigate to="/villa-los-agapantos" />
+				}
 			/>
 		</Routes>
 	</BrowserRouter>,
