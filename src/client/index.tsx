@@ -18,6 +18,16 @@ type TypingMessage = {
 	typing: boolean;
 };
 
+type OnlineUser = {
+	id: string;
+	user: string;
+};
+
+type OnlineUsersMessage = {
+	type: "online_users";
+	users: OnlineUser[];
+};
+
 function formatTime() {
 	return new Date().toLocaleTimeString("es-CL", {
 		hour: "2-digit",
@@ -38,13 +48,22 @@ function App() {
 	const [messageTimes, setMessageTimes] = useState<
 		Record<string, string>
 	>({});
+	const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+	const [onlineNotice, setOnlineNotice] = useState("");
 
 	const { room } = useParams();
 
 	const messagesAreaRef = useRef<HTMLDivElement>(null);
+
 	const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(
 		null,
 	);
+
+	const onlineNoticeTimeout = useRef<
+		ReturnType<typeof setTimeout> | null
+	>(null);
+
+	const audioContextRef = useRef<AudioContext | null>(null);
 
 	const socket = usePartySocket({
 		party: "chat",
@@ -53,7 +72,123 @@ function App() {
 		onMessage: (evt) => {
 			const message = JSON.parse(evt.data as string) as
 				| Message
-				| TypingMessage;
+				| TypingMessage
+				| OnlineUsersMessage;
+
+			/* USUARIOS EN LÍNEA */
+
+			if (message.type === "online_users") {
+				setOnlineUsers((previousUsers) => {
+					const previousIds = new Set(
+						previousUsers.map((user) => user.id),
+					);
+
+					const currentIds = new Set(
+						message.users.map((user) => user.id),
+					);
+
+					const newUser = message.users.find(
+						(user) =>
+							!previousIds.has(user.id) &&
+							user.user !== name,
+					);
+
+					const disconnectedUser = previousUsers.find(
+						(user) => !currentIds.has(user.id),
+					);
+
+					if (newUser && nameConfirmed) {
+						setOnlineNotice(
+							`🟢 ${newUser.user} se ha conectado`,
+						);
+
+						if (onlineNoticeTimeout.current) {
+							clearTimeout(
+								onlineNoticeTimeout.current,
+							);
+						}
+
+						onlineNoticeTimeout.current = setTimeout(() => {
+							setOnlineNotice("");
+						}, 3500);
+
+						/* SONIDO DE NOTIFICACIÓN */
+
+						if (audioContextRef.current) {
+							const audioContext =
+								audioContextRef.current;
+
+							if (audioContext.state === "suspended") {
+								audioContext.resume();
+							}
+
+							const oscillator =
+								audioContext.createOscillator();
+
+							const gain =
+								audioContext.createGain();
+
+							oscillator.type = "sine";
+
+							oscillator.frequency.setValueAtTime(
+								880,
+								audioContext.currentTime,
+							);
+
+							oscillator.frequency.setValueAtTime(
+								1174,
+								audioContext.currentTime + 0.08,
+							);
+
+							gain.gain.setValueAtTime(
+								0.0001,
+								audioContext.currentTime,
+							);
+
+							gain.gain.exponentialRampToValueAtTime(
+								0.08,
+								audioContext.currentTime + 0.02,
+							);
+
+							gain.gain.exponentialRampToValueAtTime(
+								0.0001,
+								audioContext.currentTime + 0.22,
+							);
+
+							oscillator.connect(gain);
+							gain.connect(
+								audioContext.destination,
+							);
+
+							oscillator.start();
+
+							oscillator.stop(
+								audioContext.currentTime + 0.25,
+							);
+						}
+					}
+
+					if (disconnectedUser && nameConfirmed) {
+						setOnlineNotice(
+							`⚪ ${disconnectedUser.user} se ha desconectado`,
+						);
+
+						if (onlineNoticeTimeout.current) {
+							clearTimeout(
+								onlineNoticeTimeout.current,
+							);
+						}
+
+						onlineNoticeTimeout.current = setTimeout(() => {
+							setOnlineNotice("");
+						}, 3500);
+					}
+
+					return message.users;
+				});
+
+				return;
+			}
 
 			/* INDICADOR "ESTÁ ESCRIBIENDO" */
 
@@ -138,18 +273,23 @@ function App() {
 			}
 
 			/* Nunca mostrar historial recibido por una versión antigua del servidor. */
+
 			if (message.type === "all") {
 				return;
 			}
 		},
 	});
 
-	/* LIMPIAR TEMPORIZADOR */
+	/* LIMPIAR TEMPORIZADORES */
 
 	useEffect(() => {
 		return () => {
 			if (typingTimeout.current) {
 				clearTimeout(typingTimeout.current);
+			}
+
+			if (onlineNoticeTimeout.current) {
+				clearTimeout(onlineNoticeTimeout.current);
 			}
 		};
 	}, []);
@@ -206,7 +346,28 @@ function App() {
 							const cleanName = name.trim();
 
 							if (cleanName.length >= 2) {
+								/* Activar sonido después de la interacción del usuario. */
+
+								const AudioContextClass =
+									window.AudioContext ||
+									(window as typeof window & {
+										webkitAudioContext?: typeof AudioContext;
+									}).webkitAudioContext;
+
+								if (AudioContextClass) {
+									audioContextRef.current =
+										new AudioContextClass();
+
+									if (
+										audioContextRef.current
+											.state === "suspended"
+									) {
+										audioContextRef.current.resume();
+									}
+								}
+
 								/* Registra esta conexión sin solicitar historial. */
+
 								socket.send(
 									JSON.stringify({
 										type: "join",
@@ -248,6 +409,7 @@ function App() {
 			<div className="chat-welcome-bar">
 				<div className="chat-welcome-text">
 					<strong>💬 Conversación de vecinos</strong>
+
 					<span>
 						Comparte información y mantente conectado.
 					</span>
@@ -255,9 +417,43 @@ function App() {
 
 				<div className="chat-live">
 					<span className="online-dot"></span>
-					En línea
+
+					<div className="online-users">
+						<strong>
+							{onlineUsers.length}{" "}
+							{onlineUsers.length === 1
+								? "vecino"
+								: "vecinos"}{" "}
+							en línea
+						</strong>
+
+						{onlineUsers.length > 0 && (
+							<div className="online-users-list">
+								{onlineUsers.map((onlineUser) => (
+									<div
+										key={onlineUser.id}
+										className="online-user"
+									>
+										<span className="online-user-dot"></span>
+
+										<span>
+											{onlineUser.user}
+										</span>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
+
+			{/* AVISO DE CONEXIÓN */}
+
+			{onlineNotice && (
+				<div className="online-notice">
+					{onlineNotice}
+				</div>
+			)}
 
 			{/* MENSAJES */}
 
@@ -279,7 +475,9 @@ function App() {
 						>
 							<div className="message-meta">
 								<span className="message-user">
-									{isMine ? "YO" : message.user}
+									{isMine
+										? "YO"
+										: message.user}
 								</span>
 
 								<span className="message-time">
