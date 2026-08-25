@@ -1088,3 +1088,241 @@ body {
 		padding: 6px 12px;
 	}
 }
+/* =========================================================
+   VILLA LOS AGAPANTOS - USUARIOS EN LINEA
+========================================================= */
+
+.chat-live {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.online-users-button {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	border: 0;
+	background: transparent;
+	padding: 6px 8px;
+	margin: 0;
+	color: #385b40;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.online-users-button:hover {
+	opacity: 0.85;
+}
+
+.online-arrow {
+	font-size: 9px;
+	margin-left: 2px;
+}
+
+.online-dot,
+.online-user-dot {
+	display: inline-block;
+	width: 9px;
+	height: 9px;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background: #42a85f;
+	box-shadow: 0 0 0 3px rgba(66, 168, 95, 0.13);
+}
+
+.online-users-list {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	width: 210px;
+	max-width: 80vw;
+	padding: 10px;
+	background: rgba(255, 255, 255, 0.98);
+	border: 1px solid rgba(76, 126, 83, 0.18);
+	border-radius: 14px;
+	box-shadow: 0 8px 25px rgba(40, 70, 46, 0.18);
+	z-index: 100;
+}
+
+.online-users-title {
+	padding: 4px 6px 9px;
+	margin-bottom: 3px;
+	border-bottom: 1px solid rgba(76, 126, 83, 0.12);
+	font-size: 12px;
+	font-weight: 700;
+	color: #385b40;
+}
+
+.online-user {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding: 7px 5px;
+	font-size: 12px;
+	color: #385b40;
+}
+
+.online-user-dot {
+	width: 8px;
+	height: 8px;
+}
+
+.online-user-empty {
+	padding: 9px 5px;
+	font-size: 12px;
+	color: #777;
+}
+
+/* =========================================================
+   AVISO DE CONEXION
+========================================================= */
+
+.online-notice {
+	width: fit-content;
+	max-width: 90%;
+	margin: 6px auto 8px;
+	padding: 7px 14px;
+	background: rgba(238, 248, 239, 0.97);
+	border: 1px solid rgba(76, 126, 83, 0.16);
+	border-radius: 999px;
+	color: #416348;
+	font-size: 12px;
+	font-weight: 600;
+	text-align: center;
+	box-shadow: 0 4px 12px rgba(50, 90, 56, 0.08);
+	animation: onlineNoticeAppear 0.25s ease;
+}
+
+@keyframes onlineNoticeAppear {
+	from {
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* =========================================================
+   CAJA DE MENSAJE + EMOJIS
+========================================================= */
+
+.chat-input-wrapper {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+}
+
+.emoji-button {
+	width: 42px;
+	height: 42px;
+	flex-shrink: 0;
+	padding: 0;
+	margin: 0 2px 0 4px;
+	border: 0;
+	background: transparent;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.emoji-button:hover {
+	transform: scale(1.08);
+}
+
+.emoji-picker {
+	position: absolute;
+	left: 0;
+	bottom: calc(100% + 8px);
+	width: 290px;
+	max-width: 90vw;
+	padding: 10px;
+	background: rgba(255, 255, 255, 0.99);
+	border: 1px solid rgba(76, 126, 83, 0.18);
+	border-radius: 15px;
+	box-shadow: 0 10px 28px rgba(40, 70, 46, 0.2);
+	z-index: 200;
+}
+
+.emoji-picker-title {
+	padding: 3px 5px 9px;
+	margin-bottom: 5px;
+	border-bottom: 1px solid rgba(76, 126, 83, 0.12);
+	font-size: 12px;
+	font-weight: 700;
+	color: #385b40;
+}
+
+.emoji-grid {
+	display: grid;
+	grid-template-columns: repeat(8, 1fr);
+	gap: 2px;
+	max-height: 220px;
+	overflow-y: auto;
+}
+
+.emoji-item {
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	margin: 0;
+	border: 0;
+	background: transparent;
+	border-radius: 8px;
+	font-size: 21px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.emoji-item:hover {
+	background: rgba(76, 126, 83, 0.1);
+	transform: scale(1.12);
+}
+
+/* =========================================================
+   MOVIL
+========================================================= */
+
+@media screen and (max-width: 700px) {
+
+	.online-users-button {
+		padding: 5px 4px;
+		font-size: 11px;
+		gap: 5px;
+	}
+
+	.online-dot {
+		width: 8px;
+		height: 8px;
+	}
+
+	.online-users-list {
+		right: -4px;
+		width: 190px;
+	}
+
+	.online-user {
+		font-size: 11px;
+	}
+
+	.emoji-picker {
+		left: 0;
+		width: 270px;
+	}
+
+	.emoji-grid {
+		grid-template-columns: repeat(7, 1fr);
+	}
+
+	.emoji-item {
+		width: 31px;
+		height: 31px;
+		font-size: 20px;
+	}
+}
