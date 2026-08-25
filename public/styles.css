@@ -1528,3 +1528,72 @@ body {
 		font-size: 12px;
 	}
 }
+/* =========================================================
+   CORRECCION DE BURBUJAS DE MENSAJES
+   Evita que palabras cortas se partan innecesariamente
+========================================================= */
+
+.message-bubble-wrapper {
+	display: inline-block;
+	width: fit-content;
+	max-width: min(78vw, 460px);
+}
+
+.message-bubble {
+	width: fit-content;
+	min-width: 70px;
+	max-width: 100%;
+	white-space: normal;
+	word-break: normal;
+	overflow-wrap: break-word;
+}
+
+.message {
+	margin-bottom: 8px;
+}
+
+.message-meta {
+	margin-bottom: 3px;
+}
+
+.message-reactions {
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+/* Mensajes propios y de otros más compactos */
+
+.my-message,
+.other-message {
+	max-width: 82%;
+}
+
+/* En celular */
+
+@media screen and (max-width: 700px) {
+
+	.message {
+		margin-bottom: 6px;
+	}
+
+	.message-bubble-wrapper {
+		max-width: 72vw;
+	}
+
+	.message-bubble {
+		min-width: 72px;
+		max-width: 72vw;
+		white-space: normal;
+		word-break: normal;
+		overflow-wrap: break-word;
+	}
+
+	.my-message,
+	.other-message {
+		max-width: 86%;
+	}
+
+	.message-meta {
+		margin-bottom: 2px;
+	}
+}
