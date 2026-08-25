@@ -33,6 +33,21 @@ type HistoryMessage = {
 	messages: ChatMessage[];
 };
 
+type ReactionMessage = {
+	type: "reaction";
+	messageId: string;
+	emoji: string;
+	user: string;
+};
+
+type ServerMessage =
+	| Message
+	| TypingMessage
+	| JoinMessage
+	| OnlineUsersMessage
+	| HistoryMessage
+	| ReactionMessage;
+
 type ConnectionState = {
 	joined: boolean;
 	user?: string;
@@ -46,9 +61,17 @@ function getChileDay() {
 		day: "2-digit",
 	}).formatToParts(new Date());
 
-	const year = parts.find((part) => part.type === "year")?.value;
-	const month = parts.find((part) => part.type === "month")?.value;
-	const day = parts.find((part) => part.type === "day")?.value;
+	const year = parts.find(
+		(part) => part.type === "year",
+	)?.value;
+
+	const month = parts.find(
+		(part) => part.type === "month",
+	)?.value;
+
+	const day = parts.find(
+		(part) => part.type === "day",
+	)?.value;
 
 	return `${year}-${month}-${day}`;
 }
@@ -60,12 +83,11 @@ export class Chat extends Server<Env> {
 
 	currentDay = "";
 
-	/*
-		Envía mensajes solamente a vecinos que ya confirmaron
-		su nombre.
-	*/
 	broadcastToJoined(
-		message: Message | TypingMessage,
+		message:
+			| Message
+			| TypingMessage
+			| ReactionMessage,
 		exclude: string[] = [],
 	) {
 		const data = JSON.stringify(message);
@@ -80,9 +102,6 @@ export class Chat extends Server<Env> {
 		}
 	}
 
-	/*
-		Obtiene todos los vecinos conectados actualmente.
-	*/
 	getOnlineUsers(): OnlineUser[] {
 		return Array.from(
 			this.getConnections<ConnectionState>(),
@@ -98,9 +117,6 @@ export class Chat extends Server<Env> {
 			}));
 	}
 
-	/*
-		Actualiza el listado de vecinos conectados para todos.
-	*/
 	broadcastOnlineUsers() {
 		const message: OnlineUsersMessage = {
 			type: "online_users",
@@ -116,9 +132,6 @@ export class Chat extends Server<Env> {
 		}
 	}
 
-	/*
-		Elimina los mensajes de días anteriores.
-	*/
 	cleanOldMessages() {
 		const today = getChileDay();
 
@@ -141,9 +154,6 @@ export class Chat extends Server<Env> {
 	}
 
 	onStart() {
-		/*
-			Crea la tabla incluyendo el día del mensaje.
-		*/
 		this.ctx.storage.sql.exec(
 			`CREATE TABLE IF NOT EXISTS messages (
 				id TEXT PRIMARY KEY,
@@ -154,31 +164,18 @@ export class Chat extends Server<Env> {
 			)`,
 		);
 
-		/*
-			Compatibilidad con la tabla antigua que no tenía
-			la columna "day".
-		*/
 		try {
 			this.ctx.storage.sql.exec(
 				`ALTER TABLE messages ADD COLUMN day TEXT`,
 			);
 		} catch {
-			/*
-				La columna ya existe.
-			*/
+			/* La columna ya existe. */
 		}
 
-		/*
-			Los mensajes antiguos de la versión anterior no
-			deben reaparecer como historial.
-		*/
 		this.cleanOldMessages();
 	}
 
 	onConnect(connection: Connection) {
-		/*
-			La persona todavía no ha confirmado su nombre.
-		*/
 		connection.setState<ConnectionState>({
 			joined: false,
 		});
@@ -190,23 +187,14 @@ export class Chat extends Server<Env> {
 		_reason: string,
 		_wasClean: boolean,
 	) {
-		/*
-			Actualiza inmediatamente la lista cuando alguien sale.
-		*/
 		if (connection.state?.joined) {
 			this.broadcastOnlineUsers();
 		}
 	}
 
-	/*
-		Guarda un mensaje del día actual.
-	*/
 	saveMessage(message: ChatMessage) {
 		const today = getChileDay();
 
-		/*
-			Si cambió el día, comenzamos un historial nuevo.
-		*/
 		if (this.currentDay !== today) {
 			this.cleanOldMessages();
 		}
@@ -244,10 +232,6 @@ export class Chat extends Server<Env> {
 		);
 	}
 
-	/*
-		Envía el historial actual del día a un vecino
-		que acaba de entrar.
-	*/
 	sendHistory(connection: Connection) {
 		const today = getChileDay();
 
@@ -260,27 +244,22 @@ export class Chat extends Server<Env> {
 			messages: this.messages,
 		};
 
-		connection.send(JSON.stringify(historyMessage));
+		connection.send(
+			JSON.stringify(historyMessage),
+		);
 	}
 
 	onMessage(connection: Connection, message: WSMessage) {
-		let parsed:
-			| Message
-			| TypingMessage
-			| JoinMessage;
+		let parsed: ServerMessage;
 
 		try {
-			parsed = JSON.parse(message as string) as
-				| Message
-				| TypingMessage
-				| JoinMessage;
+			parsed = JSON.parse(message as string) as ServerMessage;
 		} catch {
 			return;
 		}
 
-		/*
-			INGRESO DE UN VECINO
-		*/
+		/* INGRESO */
+
 		if (parsed.type === "join") {
 			const user = parsed.user.trim().slice(0, 30);
 
@@ -290,25 +269,15 @@ export class Chat extends Server<Env> {
 					user,
 				});
 
-				/*
-					Primero entregamos el historial del día.
-				*/
 				this.sendHistory(connection);
-
-				/*
-					Después actualizamos la lista de vecinos
-					para todos los conectados.
-				*/
 				this.broadcastOnlineUsers();
 			}
 
 			return;
 		}
 
-		/*
-			Una conexión sin nombre confirmado no puede
-			participar en el chat.
-		*/
+		/* CONEXIÓN NO IDENTIFICADA */
+
 		if (
 			!(connection.state as ConnectionState | null)
 				?.joined
@@ -316,17 +285,34 @@ export class Chat extends Server<Env> {
 			return;
 		}
 
-		/*
-			INDICADOR "ESTÁ ESCRIBIENDO"
-		*/
+		/* ESTÁ ESCRIBIENDO */
+
 		if (parsed.type === "typing") {
-			this.broadcastToJoined(parsed, [connection.id]);
+			this.broadcastToJoined(
+				parsed,
+				[connection.id],
+			);
 			return;
 		}
 
-		/*
-			NUEVO MENSAJE / ACTUALIZACIÓN
-		*/
+		/* REACCIÓN */
+
+		if (parsed.type === "reaction") {
+			const reaction: ReactionMessage = {
+				type: "reaction",
+				messageId: parsed.messageId,
+				emoji: parsed.emoji,
+				user:
+					connection.state?.user ||
+					parsed.user,
+			};
+
+			this.broadcastToJoined(reaction);
+			return;
+		}
+
+		/* MENSAJE */
+
 		if (
 			parsed.type === "add" ||
 			parsed.type === "update"
