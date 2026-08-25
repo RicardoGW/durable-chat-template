@@ -840,47 +840,57 @@ function App() {
 							</div>
 
 							<div className="message-bubble-wrapper">
-								<div className="message-bubble">
-									{message.content}
-								</div>
-
-								<button
-									type="button"
-									className="message-reaction-button"
+								<div
+									className="message-bubble"
+									role="button"
+									tabIndex={0}
+									aria-label="Reaccionar al mensaje"
 									onClick={() =>
 										setReactionPicker(
 											(current) =>
-												current ===
-												message.id
+												current === message.id
 													? null
 													: message.id,
 										)
 									}
-									aria-label="Reaccionar al mensaje"
-								>
-									😊
-								</button>
+									onKeyDown={(e) => {
+										if (
+											e.key === "Enter" ||
+											e.key === " "
+										) {
+											e.preventDefault();
 
-								{reactionPicker ===
-									message.id && (
+											setReactionPicker(
+												(current) =>
+													current === message.id
+														? null
+														: message.id,
+											);
+										}
+									}}
+								>
+									{message.content}
+								</div>
+
+								{reactionPicker === message.id && (
 									<div className="reaction-picker">
-										{REACTION_EMOJIS.map(
-											(emoji) => (
-												<button
-													key={emoji}
-													type="button"
-													className="reaction-option"
-													onClick={() =>
-														sendReaction(
-															message.id,
-															emoji,
-														)
-													}
-												>
-													{emoji}
-												</button>
-											),
-										)}
+										{REACTION_EMOJIS.map((emoji) => (
+											<button
+												key={emoji}
+												type="button"
+												className="reaction-option"
+												onClick={(e) => {
+													e.stopPropagation();
+
+													sendReaction(
+														message.id,
+														emoji,
+													);
+												}}
+											>
+												{emoji}
+											</button>
+										))}
 									</div>
 								)}
 							</div>
