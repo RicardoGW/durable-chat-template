@@ -165,6 +165,8 @@ function App() {
 	const [reactionPicker, setReactionPicker] = useState<string | null>(
 		null,
 	);
+	const reactionLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const longPressTriggeredRef = useRef(false);
 	const [reactions, setReactions] = useState<
 		Record<string, Reaction[]>
 	>({});
@@ -189,9 +191,6 @@ function App() {
 	const onlineUsersRef = useRef<OnlineUser[]>([]);
 
 	const onlineInitializedRef = useRef(false);
-
-	const reactionPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const longReactionPressRef = useRef(false);
 
 	const socket = usePartySocket({
 		party: "chat",
@@ -467,10 +466,6 @@ function App() {
 			if (audioContextRef.current) {
 				void audioContextRef.current.close();
 			}
-
-			if (reactionPressTimer.current) {
-				clearTimeout(reactionPressTimer.current);
-			}
 		};
 	}, []);
 
@@ -537,24 +532,29 @@ function App() {
 		sendTyping(true);
 	};
 
-	/* ABRIR REACCIONES AL TOCAR / MANTENER PRESIONADO */
-	const startReactionPress = (messageId: string) => {
-		longReactionPressRef.current = false;
-
-		if (reactionPressTimer.current) {
-			clearTimeout(reactionPressTimer.current);
-		}
-
-		reactionPressTimer.current = setTimeout(() => {
-			longReactionPressRef.current = true;
-			setReactionPicker(messageId);
-		}, 450);
+	/* REACCIONES: clic en PC y mantener presionado en celular */
+	const openReactionPicker = (messageId: string) => {
+		setReactionPicker((current) =>
+			current === messageId ? null : messageId,
+		);
 	};
 
-	const endReactionPress = () => {
-		if (reactionPressTimer.current) {
-			clearTimeout(reactionPressTimer.current);
-			reactionPressTimer.current = null;
+	const startReactionLongPress = (messageId: string) => {
+		if (reactionLongPressTimer.current) {
+			clearTimeout(reactionLongPressTimer.current);
+		}
+
+		longPressTriggeredRef.current = false;
+		reactionLongPressTimer.current = setTimeout(() => {
+			longPressTriggeredRef.current = true;
+			setReactionPicker(messageId);
+		}, 500);
+	};
+
+	const cancelReactionLongPress = () => {
+		if (reactionLongPressTimer.current) {
+			clearTimeout(reactionLongPressTimer.current);
+			reactionLongPressTimer.current = null;
 		}
 	};
 
@@ -867,41 +867,37 @@ function App() {
 								</span>
 							</div>
 
-							<div
-								className="message-bubble-wrapper"
-								onContextMenu={(e) => {
-									e.preventDefault();
-									setReactionPicker(message.id);
-								}}
-							>
+							<div className="message-bubble-wrapper">
 								<div
 									className="message-bubble"
 									role="button"
 									tabIndex={0}
-									aria-label="Mantén presionado para reaccionar"
-									onPointerDown={() => startReactionPress(message.id)}
-									onPointerUp={endReactionPress}
-									onPointerCancel={endReactionPress}
-									onPointerLeave={endReactionPress}
-									onClick={() => {
-									if (longReactionPressRef.current) {
-										longReactionPressRef.current = false;
-										return;
+									aria-label="Reaccionar al mensaje"
+									onPointerDown={() =>
+										startReactionLongPress(message.id)
 									}
-
-									setReactionPicker((current) =>
-										current === message.id ? null : message.id,
-									);
-								}}
-								onKeyDown={(e) => {
-									if (e.key === "Enter" || e.key === " ") {
+									onPointerUp={cancelReactionLongPress}
+									onPointerLeave={cancelReactionLongPress}
+									onPointerCancel={cancelReactionLongPress}
+									onContextMenu={(e) => {
 										e.preventDefault();
-										setReactionPicker((current) =>
-											current === message.id ? null : message.id,
-										);
-									}
-								}}
-							>
+										openReactionPicker(message.id);
+									}}
+									onClick={() => {
+										if (longPressTriggeredRef.current) {
+											longPressTriggeredRef.current = false;
+											return;
+										}
+										openReactionPicker(message.id);
+									}}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											e.preventDefault();
+											openReactionPicker(message.id);
+										}
+									}}
+
+								>
 									{message.content}
 								</div>
 
@@ -914,7 +910,11 @@ function App() {
 												className="reaction-option"
 												onClick={(e) => {
 													e.stopPropagation();
-												sendReaction(message.id, emoji);
+
+													sendReaction(
+														message.id,
+														emoji,
+													);
 												}}
 											>
 												{emoji}
