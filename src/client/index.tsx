@@ -167,6 +167,7 @@ function App() {
 	);
 	const reactionLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const longPressTriggeredRef = useRef(false);
+	const touchReactionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [reactions, setReactions] = useState<
 		Record<string, Reaction[]>
 	>({});
@@ -548,7 +549,26 @@ function App() {
 		reactionLongPressTimer.current = setTimeout(() => {
 			longPressTriggeredRef.current = true;
 			setReactionPicker(messageId);
-		}, 500);
+		}, 450);
+	};
+
+	const startTouchReactionLongPress = (messageId: string) => {
+		if (touchReactionTimer.current) {
+			clearTimeout(touchReactionTimer.current);
+		}
+
+		longPressTriggeredRef.current = false;
+		touchReactionTimer.current = setTimeout(() => {
+			longPressTriggeredRef.current = true;
+			setReactionPicker(messageId);
+		}, 450);
+	};
+
+	const cancelTouchReactionLongPress = () => {
+		if (touchReactionTimer.current) {
+			clearTimeout(touchReactionTimer.current);
+			touchReactionTimer.current = null;
+		}
 	};
 
 	const cancelReactionLongPress = () => {
