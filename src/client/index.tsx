@@ -165,9 +165,6 @@ function App() {
 	const [reactionPicker, setReactionPicker] = useState<string | null>(
 		null,
 	);
-	const reactionLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const longPressTriggeredRef = useRef(false);
-	const touchReactionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [reactions, setReactions] = useState<
 		Record<string, Reaction[]>
 	>({});
@@ -533,51 +530,6 @@ function App() {
 		sendTyping(true);
 	};
 
-	/* REACCIONES: clic en PC y mantener presionado en celular */
-	const openReactionPicker = (messageId: string) => {
-		setReactionPicker((current) =>
-			current === messageId ? null : messageId,
-		);
-	};
-
-	const startReactionLongPress = (messageId: string) => {
-		if (reactionLongPressTimer.current) {
-			clearTimeout(reactionLongPressTimer.current);
-		}
-
-		longPressTriggeredRef.current = false;
-		reactionLongPressTimer.current = setTimeout(() => {
-			longPressTriggeredRef.current = true;
-			setReactionPicker(messageId);
-		}, 450);
-	};
-
-	const startTouchReactionLongPress = (messageId: string) => {
-		if (touchReactionTimer.current) {
-			clearTimeout(touchReactionTimer.current);
-		}
-
-		longPressTriggeredRef.current = false;
-		touchReactionTimer.current = setTimeout(() => {
-			longPressTriggeredRef.current = true;
-			setReactionPicker(messageId);
-		}, 450);
-	};
-
-	const cancelTouchReactionLongPress = () => {
-		if (touchReactionTimer.current) {
-			clearTimeout(touchReactionTimer.current);
-			touchReactionTimer.current = null;
-		}
-	};
-
-	const cancelReactionLongPress = () => {
-		if (reactionLongPressTimer.current) {
-			clearTimeout(reactionLongPressTimer.current);
-			reactionLongPressTimer.current = null;
-		}
-	};
-
 	/* ENVIAR REACCIÓN */
 
 	const sendReaction = (
@@ -893,30 +845,29 @@ function App() {
 									role="button"
 									tabIndex={0}
 									aria-label="Reaccionar al mensaje"
-									onPointerDown={() =>
-										startReactionLongPress(message.id)
+									onClick={() =>
+										setReactionPicker(
+											(current) =>
+												current === message.id
+													? null
+													: message.id,
+										)
 									}
-									onPointerUp={cancelReactionLongPress}
-									onPointerLeave={cancelReactionLongPress}
-									onPointerCancel={cancelReactionLongPress}
-									onContextMenu={(e) => {
-										e.preventDefault();
-										openReactionPicker(message.id);
-									}}
-									onClick={() => {
-										if (longPressTriggeredRef.current) {
-											longPressTriggeredRef.current = false;
-											return;
-										}
-										openReactionPicker(message.id);
-									}}
 									onKeyDown={(e) => {
-										if (e.key === "Enter" || e.key === " ") {
+										if (
+											e.key === "Enter" ||
+											e.key === " "
+										) {
 											e.preventDefault();
-											openReactionPicker(message.id);
+
+											setReactionPicker(
+												(current) =>
+													current === message.id
+														? null
+														: message.id,
+											);
 										}
 									}}
-
 								>
 									{message.content}
 								</div>
