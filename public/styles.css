@@ -1599,92 +1599,47 @@ body {
 }
 
 /* =========================================================
-   REACCIONES: ESTILO FINAL TIPO WHATSAPP
+   REACCIONES DEFINITIVAS - ESTILO WHATSAPP
+   Sin botón 😊 lateral.
+   Clic en PC / mantener presionado en celular.
 ========================================================= */
 
-/* El antiguo mono/boton lateral desaparece por completo */
 .message-reaction-button {
 	display: none !important;
 	visibility: hidden !important;
-}
-
-.message-bubble-wrapper {
-	position: relative;
-	width: auto;
-	max-width: min(88vw, 680px);
+	opacity: 0 !important;
+	pointer-events: none !important;
 }
 
 .message-bubble {
 	cursor: pointer;
-	-webkit-user-select: none;
+	touch-action: manipulation;
+	-webkit-touch-callout: none;
 	user-select: none;
-	width: auto;
-	max-width: min(88vw, 680px);
-	min-width: 72px;
-	white-space: normal;
-	word-break: normal;
-	overflow-wrap: break-word;
 }
 
 .reaction-picker {
-	position: absolute;
-	left: 50%;
-	bottom: calc(100% + 7px);
-	transform: translateX(-50%);
-	display: flex;
-	align-items: center;
-	gap: 2px;
-	padding: 5px 7px;
-	background: rgba(255,255,255,.99);
-	border: 1px solid rgba(76,126,83,.18);
-	border-radius: 999px;
-	box-shadow: 0 7px 22px rgba(40,70,46,.20);
-	z-index: 300;
+	z-index: 9999;
 	white-space: nowrap;
 }
 
-.reaction-option {
-	width: 34px;
-	height: 34px;
-	padding: 0;
-	margin: 0;
-	border: 0;
-	border-radius: 50%;
-	background: transparent;
-	font-size: 21px;
-	line-height: 34px;
-	cursor: pointer;
+.my-message .reaction-picker {
+	left: auto;
+	right: 0;
 }
 
 @media screen and (max-width: 700px) {
-	.message-bubble-wrapper,
-	.message-bubble {
-		max-width: 88vw;
-	}
-
-	.message-bubble {
-		min-width: 72px;
-		padding: 8px 12px;
-		line-height: 1.35;
-		white-space: normal;
-		word-break: normal;
-		overflow-wrap: break-word;
-	}
-
-	.my-message,
-	.other-message {
-		max-width: 91%;
-	}
-
 	.reaction-picker {
-		max-width: calc(100vw - 24px);
-		padding: 5px 6px;
+		left: 0;
+		right: auto;
+		bottom: calc(100% + 8px);
+		max-width: calc(100vw - 28px);
+		overflow-x: auto;
+		padding: 6px 7px;
 	}
 
-	.reaction-option {
-		width: 32px;
-		height: 32px;
-		font-size: 20px;
-		line-height: 32px;
+	.my-message .reaction-picker {
+		left: auto;
+		right: 0;
 	}
 }
