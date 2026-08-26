@@ -1643,3 +1643,14 @@ body {
 		right: 0;
 	}
 }
+
+
+/* REACCIONES DEFINITIVAS: sin 😊 lateral; clic PC / mantener presionado celular */
+.message-reaction-button { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
+.message-bubble { cursor:pointer; touch-action:manipulation; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
+.reaction-picker { z-index:10000 !important; }
+@media screen and (max-width:700px) {
+  .message-reaction-button { display:none !important; visibility:hidden !important; opacity:0 !important; }
+  .reaction-picker { left:0 !important; right:auto !important; bottom:calc(100% + 8px) !important; max-width:calc(100vw - 28px) !important; }
+  .my-message .reaction-picker { left:auto !important; right:0 !important; }
+}
