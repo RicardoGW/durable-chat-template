@@ -104,6 +104,28 @@ const REACTION_EMOJIS = [
 	"👏",
 ];
 
+// Colores suaves: asignación pseudoaleatoria y estable según el nombre.
+// Así cada vecino conserva el mismo color en sus mensajes y en todos los dispositivos.
+const USER_COLOR_CLASSES = [
+	"lavender",
+	"blue",
+	"green",
+	"peach",
+	"yellow",
+	"turquoise",
+	"pink",
+];
+
+function getUserColorClass(user: string) {
+	let hash = 0;
+
+	for (let i = 0; i < user.length; i += 1) {
+		hash = (hash * 31 + user.charCodeAt(i)) | 0;
+	}
+
+	return USER_COLOR_CLASSES[Math.abs(hash) % USER_COLOR_CLASSES.length];
+}
+
 function formatTime() {
 	return new Date().toLocaleTimeString("es-CL", {
 		hour: "2-digit",
@@ -746,12 +768,11 @@ function App() {
 			<div className="chat-welcome-bar">
 				<div className="chat-welcome-text">
 					<strong>
-						💬 Conversación de vecinos
+						🌿 ¡Bienvenidos vecinos al Chat de Los Agapantos!
 					</strong>
 
 					<span>
-						Comparte información y
-						mantente conectado.
+						Este es nuestro espacio para conversar, compartir y mantenernos conectados.
 					</span>
 				</div>
 
@@ -873,12 +894,12 @@ function App() {
 							key={message.id}
 							className={`message ${
 								isMine
-									? "my-message"
-									: "other-message"
-							}`}
+								? "my-message"
+								: "other-message"
+							} user-${getUserColorClass(message.user)}`}
 						>
 							<div className="message-meta">
-								<span className="message-user">
+								<span className={`message-user user-${getUserColorClass(message.user)}`}>
 									{isMine
 										? "YO"
 										: message.user}
@@ -894,7 +915,7 @@ function App() {
 
 							<div className="message-bubble-wrapper">
 								<div
-									className="message-bubble"
+									className={`message-bubble user-${getUserColorClass(message.user)}`}
 									role="button"
 									tabIndex={0}
 									aria-label="Reaccionar al mensaje"
