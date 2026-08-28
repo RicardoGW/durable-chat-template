@@ -1722,3 +1722,36 @@ body {
 		bottom: -3px !important;
 	}
 }
+
+/* AVISO DE NUEVO MENSAJE */
+.new-message-notice {
+	position: sticky;
+	top: 10px;
+	z-index: 40;
+	display: block;
+	width: fit-content;
+	max-width: calc(100% - 30px);
+	margin: 8px auto 10px;
+	padding: 8px 16px;
+	border: 1px solid rgba(76, 126, 83, 0.22);
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.97);
+	color: #3f6948;
+	font-size: 13px;
+	font-weight: 700;
+	box-shadow: 0 5px 14px rgba(50, 90, 56, 0.12);
+	cursor: pointer;
+}
+
+.new-message-notice:hover {
+	transform: translateY(-1px);
+}
+
+@media screen and (max-width: 700px) {
+	.new-message-notice {
+		top: 8px;
+		max-width: calc(100% - 24px);
+		padding: 8px 13px;
+		font-size: 12px;
+	}
+}
