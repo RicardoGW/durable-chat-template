@@ -1696,7 +1696,7 @@ body {
 }
 
 .message-reaction-button {
-	right: -3px !important;
+	right: -34px !important;
 	bottom: -3px !important;
 	opacity: 1 !important;
 	z-index: 30 !important;
@@ -1718,7 +1718,7 @@ body {
 	}
 
 	.message-reaction-button {
-		right: -3px !important;
+		right: -34px !important;
 		bottom: -3px !important;
 	}
 }
