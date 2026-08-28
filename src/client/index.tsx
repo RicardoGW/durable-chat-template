@@ -872,6 +872,20 @@ function App() {
 									{message.content}
 								</div>
 
+								<button
+									type="button"
+									className="message-reaction-button"
+									aria-label="Reaccionar"
+									onClick={(e) => {
+										e.stopPropagation();
+										setReactionPicker((current) =>
+											current === message.id ? null : message.id,
+										);
+									}}
+								>
+									😊
+								</button>
+
 								{reactionPicker === message.id && (
 									<div className="reaction-picker">
 										{REACTION_EMOJIS.map((emoji) => (
