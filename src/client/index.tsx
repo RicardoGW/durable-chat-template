@@ -160,6 +160,7 @@ function App() {
 	>({});
 	const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
 	const [onlineNotice, setOnlineNotice] = useState("");
+	const [newMessageNotice, setNewMessageNotice] = useState("");
 	const [showOnlineUsers, setShowOnlineUsers] = useState(false);
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 	const [reactionPicker, setReactionPicker] = useState<string | null>(
@@ -181,6 +182,12 @@ function App() {
 	const onlineNoticeTimeout = useRef<
 		ReturnType<typeof setTimeout> | null
 	>(null);
+
+	const newMessageNoticeTimeout = useRef<
+		ReturnType<typeof setTimeout> | null
+	>(null);
+
+	const isNearBottomRef = useRef(true);
 
 	const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -420,6 +427,21 @@ function App() {
 
 				setTypingUser("");
 
+				if (
+					message.user !== currentNameRef.current &&
+					isNearBottomRef.current === false
+				) {
+					setNewMessageNotice(`💬 Nuevo mensaje de ${message.user}`);
+
+					if (newMessageNoticeTimeout.current) {
+						clearTimeout(newMessageNoticeTimeout.current);
+					}
+
+					newMessageNoticeTimeout.current = setTimeout(() => {
+						setNewMessageNotice("");
+					}, 5000);
+				}
+
 				return;
 			}
 
@@ -459,6 +481,10 @@ function App() {
 
 			if (onlineNoticeTimeout.current) {
 				clearTimeout(onlineNoticeTimeout.current);
+			}
+
+			if (newMessageNoticeTimeout.current) {
+				clearTimeout(newMessageNoticeTimeout.current);
 			}
 
 			if (audioContextRef.current) {
@@ -806,7 +832,34 @@ function App() {
 			<div
 				className="messages-area"
 				ref={messagesAreaRef}
+				onScroll={(e) => {
+					const area = e.currentTarget;
+					const distanceFromBottom =
+						area.scrollHeight - area.scrollTop - area.clientHeight;
+					isNearBottomRef.current = distanceFromBottom < 60;
+
+					if (isNearBottomRef.current) {
+						setNewMessageNotice("");
+					}
+				}}
 			>
+				{newMessageNotice && (
+					<button
+						type="button"
+						className="new-message-notice"
+						onClick={() => {
+							const area = messagesAreaRef.current;
+							if (area) {
+								area.scrollTop = area.scrollHeight;
+								isNearBottomRef.current = true;
+							}
+							setNewMessageNotice("");
+						}}
+					>
+						{newMessageNotice} · Ver
+					</button>
+				)}
+
 				{messages.map((message) => {
 					const isMine =
 						message.user ===
