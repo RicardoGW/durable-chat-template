@@ -104,6 +104,24 @@ const REACTION_EMOJIS = [
 	"👏",
 ];
 
+const USER_COLORS = [
+	{ background: "#eee7f7", border: "#d5c8e8", text: "#554568" },
+	{ background: "#e6eef9", border: "#c8d8ee", text: "#405574" },
+	{ background: "#e7f2ea", border: "#c8dfce", text: "#42604b" },
+	{ background: "#f8eadf", border: "#ead1bd", text: "#70533f" },
+	{ background: "#f5f0d9", border: "#e5dcae", text: "#6c6237" },
+	{ background: "#e3f1f0", border: "#c3deda", text: "#3f625f" },
+	{ background: "#f4e5ed", border: "#e2c9d7", text: "#684b5b" },
+];
+
+function getUserColor(user: string) {
+	let hash = 0;
+	for (let i = 0; i < user.length; i++) {
+		hash = (hash * 31 + user.charCodeAt(i)) >>> 0;
+	}
+	return USER_COLORS[hash % USER_COLORS.length];
+}
+
 function formatTime() {
 	return new Date().toLocaleTimeString("es-CL", {
 		hour: "2-digit",
@@ -160,7 +178,6 @@ function App() {
 	>({});
 	const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
 	const [onlineNotice, setOnlineNotice] = useState("");
-	const [newMessageNotice, setNewMessageNotice] = useState("");
 	const [showOnlineUsers, setShowOnlineUsers] = useState(false);
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 	const [reactionPicker, setReactionPicker] = useState<string | null>(
@@ -182,12 +199,6 @@ function App() {
 	const onlineNoticeTimeout = useRef<
 		ReturnType<typeof setTimeout> | null
 	>(null);
-
-	const newMessageNoticeTimeout = useRef<
-		ReturnType<typeof setTimeout> | null
-	>(null);
-
-	const isNearBottomRef = useRef(true);
 
 	const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -427,21 +438,6 @@ function App() {
 
 				setTypingUser("");
 
-				if (
-					message.user !== currentNameRef.current &&
-					isNearBottomRef.current === false
-				) {
-					setNewMessageNotice(`💬 Nuevo mensaje de ${message.user}`);
-
-					if (newMessageNoticeTimeout.current) {
-						clearTimeout(newMessageNoticeTimeout.current);
-					}
-
-					newMessageNoticeTimeout.current = setTimeout(() => {
-						setNewMessageNotice("");
-					}, 5000);
-				}
-
 				return;
 			}
 
@@ -481,10 +477,6 @@ function App() {
 
 			if (onlineNoticeTimeout.current) {
 				clearTimeout(onlineNoticeTimeout.current);
-			}
-
-			if (newMessageNoticeTimeout.current) {
-				clearTimeout(newMessageNoticeTimeout.current);
 			}
 
 			if (audioContextRef.current) {
@@ -832,34 +824,7 @@ function App() {
 			<div
 				className="messages-area"
 				ref={messagesAreaRef}
-				onScroll={(e) => {
-					const area = e.currentTarget;
-					const distanceFromBottom =
-						area.scrollHeight - area.scrollTop - area.clientHeight;
-					isNearBottomRef.current = distanceFromBottom < 60;
-
-					if (isNearBottomRef.current) {
-						setNewMessageNotice("");
-					}
-				}}
 			>
-				{newMessageNotice && (
-					<button
-						type="button"
-						className="new-message-notice"
-						onClick={() => {
-							const area = messagesAreaRef.current;
-							if (area) {
-								area.scrollTop = area.scrollHeight;
-								isNearBottomRef.current = true;
-							}
-							setNewMessageNotice("");
-						}}
-					>
-						{newMessageNotice} · Ver
-					</button>
-				)}
-
 				{messages.map((message) => {
 					const isMine =
 						message.user ===
@@ -867,6 +832,8 @@ function App() {
 
 					const messageReactions =
 						reactions[message.id] || [];
+
+					const userColor = getUserColor(message.user);
 
 					return (
 						<div
@@ -895,6 +862,11 @@ function App() {
 							<div className="message-bubble-wrapper">
 								<div
 									className="message-bubble"
+									style={{
+										background: userColor.background,
+										borderColor: userColor.border,
+										color: userColor.text,
+									}}
 									role="button"
 									tabIndex={0}
 									aria-label="Reaccionar al mensaje"
